@@ -474,6 +474,19 @@ export function GemstoneApp(): JSX.Element {
   }, [activeProfileById])
 
   useEffect(() => {
+    return window.terminalApi.onDetachedWindowClosed((event) => {
+      const pane = panesRef.current.find((candidate) => candidate.ptyId === event.ptyId)
+
+      if (!pane) {
+        return
+      }
+
+      setPanes((current) => setGemPaneHidden(current, pane.id, false))
+      setSelectedPaneId(pane.id)
+    })
+  }, [])
+
+  useEffect(() => {
     const profilesToCheck = availableProfiles.filter(isSetupManagedBuiltInProfile)
 
     for (const profile of profilesToCheck) {
@@ -1221,6 +1234,7 @@ export function GemstoneApp(): JSX.Element {
 
   async function detachPane(paneId: string): Promise<void> {
     const pane = panesRef.current.find((candidate) => candidate.id === paneId)
+    const profile = pane?.profileId ? activeProfileById.get(pane.profileId) : undefined
 
     if (!pane?.ptyId) {
       return
@@ -1229,8 +1243,14 @@ export function GemstoneApp(): JSX.Element {
     try {
       await window.terminalApi.detachPane({
         ptyId: pane.ptyId,
-        title: pane.title
+        title: pane.title,
+        subtitle: profile ? formatCommand(profile) : 'Detached desktop pane',
+        material: pane.material,
+        treatment: pane.treatment,
+        facetOrientation: pane.facetOrientation
       })
+      setPanes((current) => setGemPaneHidden(current, paneId, true))
+      setSelectedPaneId(getNextVisiblePaneId(panesRef.current, paneId))
     } catch (error: unknown) {
       updatePane(paneId, (current) => ({
         ...current,

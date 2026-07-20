@@ -30,11 +30,13 @@ export const IpcChannel = {
   TerminalReplayData: 'terminal:replay-data',
   TerminalDetachPane: 'terminal:detach-pane',
   DetachedWindowUpdate: 'detached-window:update',
+  DetachedWindowClose: 'detached-window:close',
   StorageLoad: 'storage:load',
   StorageSave: 'storage:save',
   // main -> renderer (push events)
   TerminalData: 'terminal:data',
-  TerminalExit: 'terminal:exit'
+  TerminalExit: 'terminal:exit',
+  DetachedWindowClosed: 'detached-window:closed'
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -93,11 +95,19 @@ export interface CommandAvailabilityRequest {
 export interface DetachPaneRequest {
   ptyId: string
   title: string
+  subtitle?: string
+  material?: string
+  treatment?: string
+  facetOrientation?: string
 }
 
 export interface DetachedWindowUpdateRequest {
   locked?: boolean
   alwaysOnTop?: boolean
+}
+
+export interface DetachedWindowCloseRequest {
+  ptyId: string
 }
 
 // --- Terminal: event payloads (main -> renderer) -----------------------------
@@ -115,6 +125,10 @@ export interface TerminalExitEvent {
   exitCode: number
   /** POSIX signal name/number when killed by signal; null otherwise. */
   signal: number | null
+}
+
+export interface DetachedWindowClosedEvent {
+  ptyId: string
 }
 
 /** Unsubscribe handle returned by event subscriptions. */
@@ -136,8 +150,10 @@ export interface TerminalApi {
   replayData(req: ReplayDataRequest): Promise<TerminalDataEvent[]>
   detachPane(req: DetachPaneRequest): Promise<void>
   updateDetachedWindow(req: DetachedWindowUpdateRequest): Promise<void>
+  closeDetachedWindow(req: DetachedWindowCloseRequest): Promise<void>
   onData(listener: (event: TerminalDataEvent) => void): Unsubscribe
   onExit(listener: (event: TerminalExitEvent) => void): Unsubscribe
+  onDetachedWindowClosed(listener: (event: DetachedWindowClosedEvent) => void): Unsubscribe
 }
 
 /**

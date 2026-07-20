@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import {
   IpcChannel,
+  type DetachedWindowCloseRequest,
+  type DetachedWindowClosedEvent,
   type CommandAvailabilityRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
@@ -37,6 +39,8 @@ const terminalApi: TerminalApi = {
   detachPane: (request: DetachPaneRequest) => ipcRenderer.invoke(IpcChannel.TerminalDetachPane, request),
   updateDetachedWindow: (request: DetachedWindowUpdateRequest) =>
     ipcRenderer.invoke(IpcChannel.DetachedWindowUpdate, request),
+  closeDetachedWindow: (request: DetachedWindowCloseRequest) =>
+    ipcRenderer.invoke(IpcChannel.DetachedWindowClose, request),
   onData: (callback: (event: TerminalDataEvent) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: TerminalDataEvent): void => {
       callback(payload);
@@ -52,6 +56,14 @@ const terminalApi: TerminalApi = {
 
     ipcRenderer.on(IpcChannel.TerminalExit, listener);
     return () => ipcRenderer.off(IpcChannel.TerminalExit, listener);
+  },
+  onDetachedWindowClosed: (callback: (event: DetachedWindowClosedEvent) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: DetachedWindowClosedEvent): void => {
+      callback(payload);
+    };
+
+    ipcRenderer.on(IpcChannel.DetachedWindowClosed, listener);
+    return () => ipcRenderer.off(IpcChannel.DetachedWindowClosed, listener);
   }
 };
 

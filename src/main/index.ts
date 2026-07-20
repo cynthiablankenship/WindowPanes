@@ -11,6 +11,7 @@ import {
   getInstallCommandForPlatform,
   isSetupManagedBuiltInProfile,
   type CommandAvailabilityRequest,
+  type DetachedWindowCloseRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
   type KillRequest,
@@ -50,6 +51,7 @@ interface ResolvedCommand {
 }
 
 const ptys = new Map<string, PtyRecord>();
+const detachedWindows = new Map<string, BrowserWindow>();
 const PTY_REPLAY_BUFFER_LIMIT = 200;
 const APP_NAME = 'WindowPanes';
 const LEGACY_USER_DATA_DIRNAME = 'ai-terminal-workspace';
@@ -209,6 +211,16 @@ function emitExit(event: TerminalExitEvent): void {
   }
 }
 
+function broadcastDetachedWindowClosed(ptyId: string): void {
+  for (const browserWindow of BrowserWindow.getAllWindows()) {
+    if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
+      continue;
+    }
+
+    browserWindow.webContents.send(IpcChannel.DetachedWindowClosed, { ptyId });
+  }
+}
+
 function spawnPty(request: SpawnRequest): SpawnResult {
   const profile = normalizeCommandProfileForPlatform(request.profile, process.platform);
   const resolved = resolveCommand(profile);
@@ -292,6 +304,14 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
     throw new Error('Cannot detach pane: terminal session is not running.');
   }
 
+  const existingWindow = detachedWindows.get(request.ptyId);
+
+  if (existingWindow && !existingWindow.isDestroyed()) {
+    existingWindow.show();
+    existingWindow.focus();
+    return;
+  }
+
   const detachedWindow = new BrowserWindow({
     title: request.title,
     width: Math.max(640, record.cols * 8),
@@ -312,8 +332,21 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
   });
   const hash = new URLSearchParams({
     ptyId: request.ptyId,
-    title: request.title
+    title: request.title,
+    subtitle: request.subtitle ?? '',
+    material: request.material ?? 'diamond',
+    treatment: request.treatment ?? 'sharp',
+    facetOrientation: request.facetOrientation ?? 'right'
   }).toString();
+
+  detachedWindows.set(request.ptyId, detachedWindow);
+  detachedWindow.on('closed', () => {
+    if (detachedWindows.get(request.ptyId) === detachedWindow) {
+      detachedWindows.delete(request.ptyId);
+    }
+
+    broadcastDetachedWindowClosed(request.ptyId);
+  });
 
   if (process.env.ELECTRON_RENDERER_URL) {
     const url = new URL('detached.html', ensureTrailingSlash(process.env.ELECTRON_RENDERER_URL));
@@ -323,6 +356,17 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
   }
 
   void detachedWindow.loadFile(join(__dirname, '../renderer/detached.html'), { hash });
+}
+
+function closeDetachedWindow(sender: Electron.WebContents, request: DetachedWindowCloseRequest): void {
+  const detachedWindow = detachedWindows.get(request.ptyId) ?? BrowserWindow.fromWebContents(sender);
+
+  if (!detachedWindow || detachedWindow.isDestroyed()) {
+    broadcastDetachedWindowClosed(request.ptyId);
+    return;
+  }
+
+  detachedWindow.close();
 }
 
 function updateDetachedWindow(sender: Electron.WebContents, request: DetachedWindowUpdateRequest): void {
@@ -616,6 +660,10 @@ function registerIpc(): void {
 
   ipcMain.handle(IpcChannel.DetachedWindowUpdate, (event, request: DetachedWindowUpdateRequest) => {
     updateDetachedWindow(event.sender, request);
+  });
+
+  ipcMain.handle(IpcChannel.DetachedWindowClose, (event, request: DetachedWindowCloseRequest) => {
+    closeDetachedWindow(event.sender, request);
   });
 
   ipcMain.handle(IpcChannel.TerminalRestart, (_event, request: RestartRequest) => {

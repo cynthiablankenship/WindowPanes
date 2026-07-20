@@ -2,34 +2,70 @@ import { FitAddon } from '@xterm/addon-fit'
 import { Terminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
 import type { TerminalDataEvent } from '../shared'
+import '../renderer-gemstone/styles.css'
 import './styles.css'
 
 const root = document.getElementById('root')
 const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
 const ptyId = params.get('ptyId')
 const title = params.get('title') ?? 'Detached Pane'
+const subtitle = params.get('subtitle') || 'Detached desktop pane'
+const material = getAllowedValue(params.get('material'), ['diamond', 'onyx', 'opal', 'amethyst', 'cobalt', 'emerald', 'ruby'], 'diamond')
+const treatment = getAllowedValue(params.get('treatment'), ['sharp', 'polished', 'architectural'], 'sharp')
+const facetOrientation = getAllowedValue(params.get('facetOrientation'), ['right', 'left', 'symmetric'], 'right')
 
 if (!root || !ptyId) {
   document.body.textContent = 'Detached pane is missing a terminal session.'
 } else {
-  renderDetachedPane(root, ptyId, title)
+  renderDetachedPane(root, {
+    ptyId,
+    title,
+    subtitle,
+    material,
+    treatment,
+    facetOrientation
+  })
 }
 
-function renderDetachedPane(rootElement: HTMLElement, activePtyId: string, paneTitle: string): void {
+interface DetachedPaneModel {
+  ptyId: string
+  title: string
+  subtitle: string
+  material: string
+  treatment: string
+  facetOrientation: string
+}
+
+function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): void {
   rootElement.innerHTML = `
-    <section class="detached-pane">
-      <header class="detached-titlebar">
-        <div>
-          <strong>${escapeHtml(paneTitle)}</strong>
-          <span>Detached desktop pane</span>
+    <main class="gemstone-workspace detached-workspace" data-background="icy-glass-surface">
+      <article class="gem-pane detached-pane active material-${pane.material} treatment-${pane.treatment} orientation-${pane.facetOrientation} status-running" data-pane-visible="true" data-pane-selected="true" data-pane-locked="false" data-pane-status="running" style="--pane-x: 0px; --pane-y: 0px;">
+        <div class="gem-shadow" aria-hidden="true"></div>
+        <div class="gemstone-frame">
+          <div class="facet-grid" aria-hidden="true"></div>
+          <div class="edge-rim" aria-hidden="true"></div>
+          <div class="gem-content-safe">
+            <header class="gem-chrome detached-titlebar">
+              <div>
+                <strong>${escapeHtml(pane.title)}</strong>
+                <span class="pane-command-subtitle">${escapeHtml(pane.subtitle)}</span>
+              </div>
+              <div class="pane-chip-row">
+                <span aria-label="Running" class="status-dot status-dot-green" title="Running"></span>
+              </div>
+            </header>
+            <div class="terminal-core">
+              <div class="terminal-surface detached-terminal"></div>
+            </div>
+            <div class="pane-icon-controls detached-actions" aria-label="${escapeHtml(pane.title)} detached controls" data-pane-control="true">
+              <button type="button" class="pane-icon-button" data-close aria-label="Return ${escapeHtml(pane.title)} to workspace" title="Return to workspace">X</button>
+              <button type="button" class="pane-icon-button" data-lock aria-label="Lock ${escapeHtml(pane.title)}" title="Lock">🔓</button>
+              <button type="button" class="pane-icon-button" data-pin aria-label="Unpin ${escapeHtml(pane.title)}" title="Unpin">⌖</button>
+            </div>
+          </div>
         </div>
-        <div class="detached-actions">
-          <button type="button" data-lock>Lock</button>
-          <button type="button" data-pin>Unpin</button>
-        </div>
-      </header>
-      <div class="detached-terminal"></div>
-    </section>
+      </article>
+    </main>
   `
 
   const terminalHost = rootElement.querySelector<HTMLElement>('.detached-terminal')
@@ -63,7 +99,7 @@ function renderDetachedPane(rootElement: HTMLElement, activePtyId: string, paneT
   terminal.focus()
 
   const writeEvent = (event: TerminalDataEvent): void => {
-    if (event.ptyId !== activePtyId || event.seq <= lastWrittenSeq) {
+    if (event.ptyId !== pane.ptyId || event.seq <= lastWrittenSeq) {
       return
     }
 
@@ -73,7 +109,7 @@ function renderDetachedPane(rootElement: HTMLElement, activePtyId: string, paneT
 
   const flushReplayAndPending = (replayEvents: TerminalDataEvent[]): void => {
     const events = [...replayEvents, ...pendingLiveEvents]
-      .filter((event) => event.ptyId === activePtyId)
+      .filter((event) => event.ptyId === pane.ptyId)
       .sort((a, b) => a.seq - b.seq)
 
     for (const event of events) {
@@ -85,7 +121,7 @@ function renderDetachedPane(rootElement: HTMLElement, activePtyId: string, paneT
   }
 
   window.terminalApi.onData((event) => {
-    if (event.ptyId !== activePtyId) {
+    if (event.ptyId !== pane.ptyId) {
       return
     }
 
@@ -98,34 +134,44 @@ function renderDetachedPane(rootElement: HTMLElement, activePtyId: string, paneT
   })
 
   terminal.onData((data) => {
-    window.terminalApi.write({ ptyId: activePtyId, data })
+    window.terminalApi.write({ ptyId: pane.ptyId, data })
   })
 
   const resize = (): void => {
     fitAddon.fit()
-    window.terminalApi.resize({ ptyId: activePtyId, cols: terminal.cols, rows: terminal.rows })
+    window.terminalApi.resize({ ptyId: pane.ptyId, cols: terminal.cols, rows: terminal.rows })
   }
 
   new ResizeObserver(resize).observe(terminalHost)
   window.addEventListener('resize', resize)
 
   window.terminalApi
-    .replayData({ ptyId: activePtyId })
+    .replayData({ ptyId: pane.ptyId })
     .then(flushReplayAndPending)
     .catch(() => flushReplayAndPending([]))
+
+  rootElement.querySelector<HTMLButtonElement>('[data-close]')?.addEventListener('click', async () => {
+    await window.terminalApi.closeDetachedWindow({ ptyId: pane.ptyId })
+  })
 
   rootElement.querySelector<HTMLButtonElement>('[data-lock]')?.addEventListener('click', async (event) => {
     locked = !locked
     rootElement.querySelector('.detached-pane')?.classList.toggle('locked', locked)
-    ;(event.currentTarget as HTMLButtonElement).textContent = locked ? 'Unlock' : 'Lock'
+    ;(event.currentTarget as HTMLButtonElement).textContent = locked ? '🔒' : '🔓'
+    ;(event.currentTarget as HTMLButtonElement).title = locked ? 'Unlock' : 'Lock'
     await window.terminalApi.updateDetachedWindow({ locked })
   })
 
   rootElement.querySelector<HTMLButtonElement>('[data-pin]')?.addEventListener('click', async (event) => {
     alwaysOnTop = !alwaysOnTop
-    ;(event.currentTarget as HTMLButtonElement).textContent = alwaysOnTop ? 'Unpin' : 'Pin'
+    ;(event.currentTarget as HTMLButtonElement).textContent = alwaysOnTop ? '⌖' : '◇'
+    ;(event.currentTarget as HTMLButtonElement).title = alwaysOnTop ? 'Unpin' : 'Pin'
     await window.terminalApi.updateDetachedWindow({ alwaysOnTop })
   })
+}
+
+function getAllowedValue(value: string | null, allowedValues: string[], fallback: string): string {
+  return value && allowedValues.includes(value) ? value : fallback
 }
 
 function escapeHtml(value: string): string {

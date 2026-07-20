@@ -1,12 +1,6 @@
 :root {
   color: #e8f4fb;
   background: transparent;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 html,
@@ -19,82 +13,67 @@ body,
   background: transparent;
 }
 
-button {
-  border: 1px solid rgba(176, 222, 242, 0.28);
-  border-radius: 7px;
-  background: rgba(7, 17, 24, 0.84);
-  color: #e8f4fb;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 7px 9px;
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: rgba(140, 233, 255, 0.68);
-}
-
-.detached-pane {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  width: 100%;
-  height: 100%;
+.detached-workspace {
+  width: 100vw;
+  height: 100vh;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
-  border: 1px solid rgba(180, 230, 255, 0.36);
-  border-radius: 14px;
-  background:
-    linear-gradient(135deg, rgba(222, 246, 255, 0.18), rgba(4, 8, 12, 0.04) 38%),
-    rgba(5, 13, 19, 0.78);
-  box-shadow: 0 22px 72px rgba(0, 0, 0, 0.46);
-  backdrop-filter: blur(20px);
+  background: transparent;
 }
 
-.detached-pane.locked {
-  border-color: rgba(125, 255, 188, 0.58);
+.detached-workspace::before,
+.detached-workspace::after {
+  content: none;
+}
+
+.detached-workspace .detached-pane {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 0;
+  min-height: 0;
+  transform: none;
+}
+
+.detached-workspace .detached-pane.active {
+  transform: none;
+}
+
+.detached-workspace .gem-shadow {
+  inset: 40px 26px -16px 28px;
 }
 
 .detached-titlebar {
   -webkit-app-region: drag;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 52px;
-  padding: 10px 12px 10px 16px;
-  background: rgba(6, 16, 24, 0.86);
 }
 
 .detached-pane.locked .detached-titlebar {
   -webkit-app-region: no-drag;
 }
 
-.detached-titlebar div:first-child {
-  display: grid;
-  gap: 2px;
+.detached-workspace .pane-command-subtitle,
+.detached-workspace .pane-chip-row,
+.detached-workspace .pane-icon-controls {
+  opacity: 1;
 }
 
-.detached-titlebar strong {
-  font-size: 13px;
-}
-
-.detached-titlebar span {
-  color: #9fb3bf;
-  font-size: 11px;
-}
-
-.detached-actions {
+.detached-workspace .pane-icon-controls {
   -webkit-app-region: no-drag;
-  display: flex;
-  gap: 7px;
+  top: 36px;
+  right: 64px;
+  pointer-events: auto;
 }
 
-.detached-terminal {
-  min-height: 0;
-  padding: 10px;
-  background: #050b10;
+.detached-workspace .pane-icon-button {
+  font-size: 0.82rem;
 }
 
-.xterm {
+.detached-workspace .terminal-surface {
+  padding: 9px 11px;
+}
+
+.detached-workspace .terminal-surface .xterm {
   height: 100%;
 }
