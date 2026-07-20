@@ -2136,7 +2136,12 @@ function getNewPaneProfiles(
   profiles: CommandProfile[],
   availabilityByProfileId: Record<string, CommandAvailabilityResult>
 ): CommandProfile[] {
-  return profiles.filter((profile) => !profile.setup || availabilityByProfileId[profile.id]?.state === 'installed')
+  return profiles.filter(
+    (profile) =>
+      !profile.setup ||
+      profile.builtIn === true ||
+      availabilityByProfileId[profile.id]?.state === 'installed'
+  )
 }
 
 function getInspectorProfiles(
@@ -2363,7 +2368,16 @@ function getPaneAfterExit(pane: GemPaneState, event: TerminalExitEvent): GemPane
 }
 
 function findInstalledAgentProfile(availabilityByProfileId: Record<string, CommandAvailabilityResult>): string | null {
-  for (const profileId of ['builtin.codex', 'builtin.claude', 'builtin.opencode', 'builtin.reasonix', 'builtin.pi']) {
+  for (const profileId of [
+    'builtin.codex',
+    'builtin.claude',
+    'builtin.droid',
+    'builtin.opencode',
+    'builtin.reasonix',
+    'builtin.pi',
+    'builtin.hermes',
+    'builtin.openclaw'
+  ]) {
     if (availabilityByProfileId[profileId]?.state === 'installed') {
       return profileId
     }

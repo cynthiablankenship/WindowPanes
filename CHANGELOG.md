@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.7
+
+Gemstone profile chooser fix for fresh macOS installs.
+
+### Changed
+
+- Kept setup-managed built-in agent profiles visible in the Gemstone profile chooser even before their CLIs are installed, so Claude Code, OpenCode, Reasonix, Pi, Hermes, Droid, and OpenClaw can be selected and installed from the Mac app.
+- Expanded Gemstone's installed-agent fallback order to include Droid, Hermes, and OpenClaw.
+- Bumped the app and package version to 0.2.7.
+
 ## 0.2.1
 
 Direct-manipulation Canvas panes and curated glass materials.

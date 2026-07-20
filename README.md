@@ -87,7 +87,7 @@ npm run dist:win:gemstone
 This command runs the Electron/Vite build first, then writes the NSIS installer to:
 
 ```text
-dist/WindowPanes-Setup-0.2.6.exe
+dist/WindowPanes-Setup-0.2.7.exe
 ```
 
 Create the unpacked Gemstone macOS app folder for local testing:
@@ -111,7 +111,7 @@ npm run dist:mac:gemstone
 This command runs the Electron/Vite build first, then writes a local unsigned DMG to:
 
 ```text
-dist/WindowPanes-0.2.6-arm64.dmg
+dist/WindowPanes-0.2.7-arm64.dmg
 ```
 
 Create the unpacked Gemstone Linux app folder for local testing:
@@ -135,14 +135,14 @@ npm run dist:linux:gemstone
 This command runs the Electron/Vite build first, then writes the AppImage to:
 
 ```text
-dist/WindowPanes-0.2.6-x86_64.AppImage
+dist/WindowPanes-0.2.7-x86_64.AppImage
 ```
 
 On Linux, make the AppImage executable and run it:
 
 ```bash
-chmod +x dist/WindowPanes-0.2.6-x86_64.AppImage
-./dist/WindowPanes-0.2.6-x86_64.AppImage
+chmod +x dist/WindowPanes-0.2.7-x86_64.AppImage
+./dist/WindowPanes-0.2.7-x86_64.AppImage
 ```
 
 Linux packaging should ideally be validated on Linux before release because WindowPanes uses the native `node-pty` dependency.
@@ -166,11 +166,11 @@ Use this checklist before tagging or sharing a local v0.2 build:
 - [ ] Run `npm run dev` and confirm the development app opens.
 - [ ] Run `npm run dev:gemstone` and confirm the gemstone lab opens.
 - [ ] On macOS, run `npm run package:mac:gemstone` and launch `dist/mac-arm64/WindowPanes.app`.
-- [ ] On macOS, run `npm run dist:mac:gemstone` and confirm `dist/WindowPanes-0.2.6-arm64.dmg` is created.
+- [ ] On macOS, run `npm run dist:mac:gemstone` and confirm `dist/WindowPanes-0.2.7-arm64.dmg` is created.
 - [ ] Run `npm run package:win:gemstone` and launch `dist/win-unpacked/WindowPanes.exe`.
-- [ ] Run `npm run dist:win:gemstone` and confirm `dist/WindowPanes-Setup-0.2.6.exe` is created.
+- [ ] Run `npm run dist:win:gemstone` and confirm `dist/WindowPanes-Setup-0.2.7.exe` is created.
 - [ ] On Linux, run `npm run package:linux:gemstone` and launch `dist/linux-unpacked/WindowPanes`.
-- [ ] On Linux, run `npm run dist:linux:gemstone`, then `chmod +x dist/WindowPanes-0.2.6-x86_64.AppImage` and launch the AppImage.
+- [ ] On Linux, run `npm run dist:linux:gemstone`, then `chmod +x dist/WindowPanes-0.2.7-x86_64.AppImage` and launch the AppImage.
 - [ ] Install from the installer build and open WindowPanes.
 - [ ] Confirm the app name is WindowPanes and the app/window icon is shown.
 - [ ] Launch the **Generic Shell** profile.

@@ -1,7 +1,7 @@
 {
   "name": "ai-terminal-workspace",
   "productName": "WindowPanes",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "desktopName": "WindowPanes.desktop",
   "description": "WindowPanes is a local desktop terminal workspace for hosting AI coding CLIs in multiple panes.",
   "main": "out/main/index.js",

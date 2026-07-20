@@ -207,4 +207,19 @@ describe('gemstone renderer controls', () => {
     expect(shortcutEffect).toContain('setIsInspectorOpen((current) => !current)')
     expect(source).toContain("target.closest('.terminal-surface, .xterm')")
   })
+
+  it('keeps setup-managed built-in agents visible before they are installed', () => {
+    const newPaneProfiles = sourceBlock('function getNewPaneProfiles', 'function getInspectorProfiles')
+    const installedFallback = sourceBlock('function findInstalledAgentProfile', 'function getProfileTitle')
+
+    expect(newPaneProfiles).toContain('profile.builtIn === true')
+    expect(newPaneProfiles).not.toContain("availabilityByProfileId[profile.id]?.state === 'installed')")
+    expect(installedFallback).toContain("'builtin.claude'")
+    expect(installedFallback).toContain("'builtin.droid'")
+    expect(installedFallback).toContain("'builtin.opencode'")
+    expect(installedFallback).toContain("'builtin.reasonix'")
+    expect(installedFallback).toContain("'builtin.pi'")
+    expect(installedFallback).toContain("'builtin.hermes'")
+    expect(installedFallback).toContain("'builtin.openclaw'")
+  })
 })
