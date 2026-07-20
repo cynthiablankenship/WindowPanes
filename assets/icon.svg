@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="WindowPanes app icon">
+  <defs>
+    <linearGradient id="backPane" x1="122" y1="86" x2="332" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8fe8ff"/>
+      <stop offset="0.5" stop-color="#32a9f2"/>
+      <stop offset="1" stop-color="#1267bc"/>
+    </linearGradient>
+    <linearGradient id="middlePane" x1="96" y1="62" x2="337" y2="426" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b7f5ff"/>
+      <stop offset="0.46" stop-color="#4ebfff"/>
+      <stop offset="1" stop-color="#1c6ed0"/>
+    </linearGradient>
+    <linearGradient id="frontPane" x1="156" y1="96" x2="405" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d9fbff"/>
+      <stop offset="0.36" stop-color="#62d4ff"/>
+      <stop offset="1" stop-color="#1e78dc"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="139" y1="84" x2="363" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="paneShadow" x="32" y="32" width="448" height="448" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="23" flood-color="#082f6f" flood-opacity="0.34"/>
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0b4e91" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#paneShadow)">
+    <rect x="151" y="75" width="198" height="286" rx="42" fill="url(#backPane)" opacity="0.58" transform="rotate(7 250 218)"/>
+    <rect x="92" y="60" width="226" height="318" rx="46" fill="url(#middlePane)" opacity="0.84" transform="rotate(-6 205 219)"/>
+    <rect x="154" y="110" width="230" height="310" rx="48" fill="url(#frontPane)"/>
+    <rect x="171" y="127" width="196" height="276" rx="34" fill="url(#shine)" opacity="0.72"/>
+    <path d="M269 126v278M171 252h196" fill="none" stroke="#e8fbff" stroke-width="18" stroke-linecap="round" opacity="0.58"/>
+    <path d="M176 136c26-18 97-21 179-10" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" opacity="0.62"/>
+    <rect x="154" y="110" width="230" height="310" rx="48" fill="none" stroke="#e4fbff" stroke-width="14" opacity="0.64"/>
+    <rect x="154" y="110" width="230" height="310" rx="48" fill="none" stroke="#0964bf" stroke-width="8" opacity="0.38"/>
+  </g>
+</svg>

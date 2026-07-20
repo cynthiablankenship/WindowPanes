@@ -1,0 +1,125 @@
+{
+  "name": "ai-terminal-workspace",
+  "productName": "WindowPanes",
+  "version": "0.2.1",
+  "desktopName": "WindowPanes.desktop",
+  "description": "WindowPanes is a local desktop terminal workspace for hosting AI coding CLIs in multiple panes.",
+  "main": "out/main/index.js",
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:gemstone": "node scripts/dev-gemstone.mjs",
+    "build": "electron-vite build",
+    "build:gemstone-package": "node scripts/build-gemstone-package.mjs",
+    "package:win": "npm run build && electron-builder --win --dir",
+    "dist:win": "npm run build && electron-builder --win nsis",
+    "package:mac": "npm run build && electron-builder --mac --dir",
+    "dist:mac": "npm run build && electron-builder --mac dmg",
+    "package:mac:gemstone": "npm run build:gemstone-package && electron-builder --mac --dir",
+    "dist:mac:gemstone": "npm run build:gemstone-package && electron-builder --mac dmg",
+    "package:linux": "npm run build && electron-builder --linux --dir",
+    "dist:linux": "npm run build && electron-builder --linux AppImage",
+    "clean:dist": "node -e \"const fs=require('fs'); for (const p of ['dist','out']) fs.rmSync(p,{recursive:true,force:true});\"",
+    "start": "electron-vite preview",
+    "rebuild": "electron-rebuild -f -w node-pty",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run"
+  },
+  "build": {
+    "appId": "com.windowpanes.app",
+    "productName": "WindowPanes",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "npmRebuild": false,
+    "asarUnpack": [
+      "node_modules/node-pty/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "icon": "assets/icon.png",
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dir"
+        },
+        {
+          "target": "dmg"
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/linux-icons",
+      "executableName": "WindowPanes",
+      "syncDesktopName": true,
+      "category": "Utility",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-x86_64.${ext}"
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "shortcutName": "WindowPanes",
+      "uninstallDisplayName": "WindowPanes"
+    }
+  },
+  "dependencies": {
+    "node-pty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-resizable-panels": "^2.0.19",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vitest": "^1.6.0"
+  },
+  "allowScripts": {
+    "electron@31.7.7": true,
+    "esbuild@0.21.5": true,
+    "node-pty@1.1.0": true,
+    "fsevents@2.3.3": true,
+    "electron-winstaller@5.4.0": true
+  }
+}

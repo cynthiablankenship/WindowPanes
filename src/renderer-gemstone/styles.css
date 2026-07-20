@@ -1,0 +1,1973 @@
+@import '@xterm/xterm/css/xterm.css';
+
+:root {
+  color-scheme: dark;
+  color: #edf8ff;
+  background: #05070a;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+button,
+select {
+  border: 1px solid rgba(205, 235, 255, 0.22);
+  border-radius: 7px;
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  min-height: 30px;
+  padding: 0 10px;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.02)),
+    rgba(7, 16, 24, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 22px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled),
+button:focus-visible {
+  border-color: rgba(163, 230, 255, 0.56);
+  background:
+    linear-gradient(150deg, rgba(173, 232, 255, 0.22), rgba(255, 255, 255, 0.04)),
+    rgba(10, 25, 36, 0.9);
+}
+
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(122, 221, 255, 0.68);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+select {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 9px;
+  background: rgba(6, 14, 21, 0.92);
+}
+
+.gemstone-workspace {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #05070a;
+  --atmosphere-bloom:
+    radial-gradient(ellipse at 24% 18%, rgba(255, 255, 255, 0.52), transparent 30%),
+    radial-gradient(ellipse at 76% 64%, rgba(151, 221, 255, 0.18), transparent 38%);
+  --atmosphere-frost:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.2) 0 1px, transparent 2px),
+    radial-gradient(circle at 62% 44%, rgba(255, 255, 255, 0.12) 0 1px, transparent 2px);
+  --atmosphere-refraction:
+    linear-gradient(112deg, transparent 0 28%, rgba(255, 255, 255, 0.16) 29%, transparent 38% 100%),
+    linear-gradient(24deg, transparent 0 60%, rgba(205, 239, 255, 0.12) 61%, transparent 70% 100%);
+  --atmosphere-opacity: 0.72;
+  --atmosphere-blur: 14px;
+}
+
+.gemstone-workspace[data-background="simple-glass"],
+.gemstone-workspace[data-background="simple-diamond"],
+.gemstone-workspace[data-background="simple-onyx"],
+.gemstone-workspace[data-background="simple-amethyst"],
+.gemstone-workspace[data-background="simple-cobalt"],
+.gemstone-workspace[data-background="simple-emerald"],
+.gemstone-workspace[data-background="simple-ruby"],
+.gemstone-workspace[data-background="simple-opal"] {
+  color: var(--simple-bg-text);
+  background:
+    radial-gradient(ellipse at 20% 14%, var(--simple-bg-glow), transparent 32%),
+    radial-gradient(ellipse at 78% 30%, var(--simple-bg-accent), transparent 38%),
+    linear-gradient(148deg, var(--simple-bg-start) 0%, var(--simple-bg-mid) 47%, var(--simple-bg-end) 100%);
+  --atmosphere-bloom:
+    radial-gradient(ellipse at 30% 20%, var(--simple-bloom-primary), transparent 28%),
+    radial-gradient(ellipse at 74% 76%, var(--simple-bloom-secondary), transparent 40%);
+  --atmosphere-refraction:
+    linear-gradient(112deg, transparent 0 31%, var(--simple-refraction-primary) 32%, transparent 39% 100%),
+    linear-gradient(25deg, transparent 0 64%, var(--simple-refraction-secondary) 65%, transparent 72% 100%);
+}
+
+.gemstone-workspace[data-background="simple-glass"] {
+  --simple-bg-text: #f2fbff;
+  --simple-bg-glow: rgba(255, 255, 255, 0.7);
+  --simple-bg-accent: rgba(184, 229, 255, 0.24);
+  --simple-bg-start: #eef7fa;
+  --simple-bg-mid: #d8e7ec;
+  --simple-bg-end: #9fb8c5;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.46);
+  --simple-bloom-secondary: rgba(144, 216, 255, 0.14);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.14);
+  --simple-refraction-secondary: rgba(177, 222, 241, 0.1);
+}
+
+.gemstone-workspace[data-background="simple-diamond"] {
+  --simple-bg-text: #f6fcff;
+  --simple-bg-glow: rgba(255, 255, 255, 0.76);
+  --simple-bg-accent: rgba(202, 238, 255, 0.28);
+  --simple-bg-start: #fbfeff;
+  --simple-bg-mid: #e3eef3;
+  --simple-bg-end: #b4c8d2;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.5);
+  --simple-bloom-secondary: rgba(172, 226, 255, 0.15);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.16);
+  --simple-refraction-secondary: rgba(202, 232, 246, 0.12);
+}
+
+.gemstone-workspace[data-background="simple-onyx"] {
+  --simple-bg-text: #edf8ff;
+  --simple-bg-glow: rgba(214, 232, 242, 0.12);
+  --simple-bg-accent: rgba(124, 161, 178, 0.12);
+  --simple-bg-start: #020406;
+  --simple-bg-mid: #080d12;
+  --simple-bg-end: #171b20;
+  --simple-bloom-primary: rgba(211, 235, 248, 0.16);
+  --simple-bloom-secondary: rgba(121, 155, 174, 0.1);
+  --simple-refraction-primary: rgba(220, 239, 249, 0.08);
+  --simple-refraction-secondary: rgba(255, 255, 255, 0.05);
+}
+
+.gemstone-workspace[data-background="simple-amethyst"] {
+  --simple-bg-text: #fbf5ff;
+  --simple-bg-glow: rgba(255, 255, 255, 0.52);
+  --simple-bg-accent: rgba(207, 162, 255, 0.2);
+  --simple-bg-start: #efe7f7;
+  --simple-bg-mid: #cdb7dd;
+  --simple-bg-end: #705681;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.38);
+  --simple-bloom-secondary: rgba(191, 132, 255, 0.16);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.12);
+  --simple-refraction-secondary: rgba(206, 164, 238, 0.12);
+}
+
+.gemstone-workspace[data-background="simple-cobalt"] {
+  --simple-bg-text: #f2f9ff;
+  --simple-bg-glow: rgba(255, 255, 255, 0.46);
+  --simple-bg-accent: rgba(116, 184, 255, 0.22);
+  --simple-bg-start: #e4eff7;
+  --simple-bg-mid: #a9c7df;
+  --simple-bg-end: #315f8d;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.36);
+  --simple-bloom-secondary: rgba(102, 176, 255, 0.16);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.12);
+  --simple-refraction-secondary: rgba(134, 195, 236, 0.12);
+}
+
+.gemstone-workspace[data-background="simple-emerald"] {
+  --simple-bg-text: #f1fff8;
+  --simple-bg-glow: rgba(255, 255, 255, 0.44);
+  --simple-bg-accent: rgba(118, 221, 174, 0.2);
+  --simple-bg-start: #e5f5ef;
+  --simple-bg-mid: #a9d1bd;
+  --simple-bg-end: #3f7b63;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.34);
+  --simple-bloom-secondary: rgba(99, 214, 164, 0.15);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.12);
+  --simple-refraction-secondary: rgba(140, 217, 183, 0.12);
+}
+
+.gemstone-workspace[data-background="simple-ruby"] {
+  --simple-bg-text: #fff6f8;
+  --simple-bg-glow: rgba(255, 255, 255, 0.42);
+  --simple-bg-accent: rgba(255, 132, 153, 0.18);
+  --simple-bg-start: #f6e5e8;
+  --simple-bg-mid: #d4a6af;
+  --simple-bg-end: #7d3c4a;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.32);
+  --simple-bloom-secondary: rgba(255, 109, 138, 0.14);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.12);
+  --simple-refraction-secondary: rgba(236, 151, 166, 0.12);
+}
+
+.gemstone-workspace[data-background="simple-opal"] {
+  --simple-bg-text: #f5fffb;
+  --simple-bg-glow: rgba(255, 255, 255, 0.58);
+  --simple-bg-accent: rgba(142, 224, 213, 0.18);
+  --simple-bg-start: #f1faf6;
+  --simple-bg-mid: #c7e2dc;
+  --simple-bg-end: #92abb2;
+  --simple-bloom-primary: rgba(255, 255, 255, 0.4);
+  --simple-bloom-secondary: rgba(139, 225, 218, 0.13);
+  --simple-refraction-primary: rgba(255, 255, 255, 0.13);
+  --simple-refraction-secondary: rgba(255, 185, 221, 0.1);
+}
+
+.gemstone-workspace[data-background="dark-glass"] {
+  color: #edf8ff;
+  background:
+    radial-gradient(ellipse at 16% 16%, rgba(214, 232, 242, 0.12), transparent 32%),
+    radial-gradient(ellipse at 84% 74%, rgba(124, 161, 178, 0.12), transparent 42%),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.05), transparent 30% 72%, rgba(211, 232, 244, 0.04)),
+    linear-gradient(145deg, #020406 0%, #080d12 48%, #171b20 100%);
+  --atmosphere-bloom:
+    radial-gradient(ellipse at 22% 18%, rgba(211, 235, 248, 0.16), transparent 30%),
+    radial-gradient(ellipse at 76% 78%, rgba(121, 155, 174, 0.1), transparent 42%);
+  --atmosphere-frost:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.06) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 56%, rgba(255, 255, 255, 0.04) 0 1px, transparent 2px);
+  --atmosphere-refraction:
+    linear-gradient(128deg, transparent 0 34%, rgba(220, 239, 249, 0.08) 35%, transparent 43% 100%),
+    linear-gradient(23deg, transparent 0 68%, rgba(255, 255, 255, 0.05) 69%, transparent 75% 100%);
+  --atmosphere-opacity: 0.5;
+  --atmosphere-blur: 10px;
+}
+
+.gemstone-workspace[data-background="custom-local-asset"] {
+  color: #f1fbff;
+  background:
+    linear-gradient(150deg, rgba(2, 6, 10, 0.2), rgba(2, 6, 10, 0.58)),
+    var(--gemstone-custom-background-image, linear-gradient(145deg, #16222b 0%, #394c57 48%, #10161c 100%));
+  background-position: center;
+  background-size: cover;
+  --atmosphere-bloom:
+    radial-gradient(ellipse at 28% 22%, rgba(214, 238, 250, 0.2), transparent 34%),
+    radial-gradient(ellipse at 72% 72%, rgba(144, 216, 255, 0.12), transparent 42%);
+  --atmosphere-refraction:
+    linear-gradient(116deg, transparent 0 34%, rgba(255, 255, 255, 0.1) 35%, transparent 43% 100%);
+}
+
+.gemstone-workspace[data-background="icy-glass-surface"] {
+  color: #f7fcff;
+  background:
+    radial-gradient(ellipse at 49% 42%, rgba(255, 255, 255, 0.9), transparent 23%),
+    radial-gradient(ellipse at 60% 52%, rgba(187, 231, 245, 0.54), transparent 44%),
+    radial-gradient(ellipse at 18% 110%, transparent 0 50%, rgba(123, 174, 195, 0.22) 51%, transparent 54%),
+    radial-gradient(ellipse at 76% -18%, transparent 0 45%, rgba(255, 255, 255, 0.38) 46%, transparent 49%),
+    linear-gradient(116deg, transparent 0 35%, rgba(255, 255, 255, 0.3) 36%, transparent 47% 100%),
+    repeating-linear-gradient(102deg, rgba(255, 255, 255, 0.11) 0 1px, transparent 1px 31px),
+    repeating-linear-gradient(172deg, rgba(77, 128, 151, 0.08) 0 1px, transparent 1px 17px),
+    linear-gradient(145deg, #f8fdff 0%, #dcecf2 44%, #9fc0cd 100%);
+  background-blend-mode: screen, soft-light, normal, screen, soft-light, overlay, soft-light, normal;
+  --atmosphere-bloom:
+    radial-gradient(ellipse at 48% 40%, rgba(255, 255, 255, 0.6), transparent 30%),
+    radial-gradient(ellipse at 64% 56%, rgba(147, 218, 244, 0.24), transparent 46%);
+  --atmosphere-frost:
+    radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.24) 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 58%, rgba(255, 255, 255, 0.16) 0 1px, transparent 2px),
+    repeating-linear-gradient(104deg, transparent 0 42px, rgba(255, 255, 255, 0.18) 43px, transparent 45px 128px);
+  --atmosphere-refraction:
+    radial-gradient(ellipse at 28% 118%, transparent 0 48%, rgba(96, 151, 175, 0.16) 49%, transparent 52%),
+    radial-gradient(ellipse at 92% 16%, transparent 0 36%, rgba(255, 255, 255, 0.22) 37%, transparent 40%),
+    linear-gradient(118deg, transparent 0 30%, rgba(255, 255, 255, 0.22) 31%, transparent 42% 100%),
+    linear-gradient(24deg, transparent 0 57%, rgba(117, 178, 204, 0.18) 58%, transparent 66% 100%);
+  --atmosphere-opacity: 0.76;
+  --atmosphere-blur: 7px;
+}
+
+.gemstone-workspace[data-background="original-grid"] {
+  color: #e8f5ff;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 22% 16%, rgba(137, 219, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 78% 74%, rgba(160, 255, 204, 0.1), transparent 34%),
+    linear-gradient(142deg, #05070a, #101923 48%, #040609);
+  background-size:
+    94px 94px,
+    94px 94px,
+    auto,
+    auto,
+    auto;
+}
+
+.gemstone-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1400px;
+}
+
+.gemstone-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    var(--atmosphere-bloom),
+    var(--atmosphere-refraction);
+  filter: blur(var(--gemstone-background-soften, var(--atmosphere-blur)));
+  mix-blend-mode: screen;
+  opacity: var(--gemstone-background-opacity, var(--atmosphere-opacity));
+  mask-image: radial-gradient(ellipse at 50% 50%, black 0 58%, transparent 88%);
+}
+
+.gemstone-atmosphere::before,
+.gemstone-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: -40px;
+}
+
+.gemstone-atmosphere::before {
+  background: var(--atmosphere-frost);
+  background-size: 64px 64px, 118px 118px;
+  opacity: 0.7;
+}
+
+.gemstone-atmosphere::after {
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255, 255, 255, 0.12), transparent 58%),
+    var(--atmosphere-refraction);
+  filter: blur(22px);
+  opacity: var(--gemstone-background-intensity, 0.56);
+}
+
+.gemstone-workspace[data-background="original-grid"] .gemstone-atmosphere {
+  background:
+    linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.04) 19%, transparent 21%),
+    linear-gradient(26deg, transparent 68%, rgba(255, 255, 255, 0.035) 69%, transparent 71%);
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+  mask-image: radial-gradient(circle at 50% 52%, black 0 55%, transparent 78%);
+}
+
+.gemstone-workspace[data-background="original-grid"] .gemstone-atmosphere::before,
+.gemstone-workspace[data-background="original-grid"] .gemstone-atmosphere::after {
+  display: none;
+}
+
+.gemstone-workspace[data-background="icy-glass-surface"] .gemstone-atmosphere {
+  mix-blend-mode: soft-light;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 0 68%, transparent 92%);
+}
+
+.gemstone-workspace[data-background="icy-glass-surface"] .gemstone-atmosphere::before {
+  background:
+    repeating-linear-gradient(103deg, transparent 0 54px, rgba(255, 255, 255, 0.18) 55px, transparent 57px 164px),
+    repeating-linear-gradient(176deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 21px),
+    var(--atmosphere-frost);
+  background-size: auto, auto, 72px 72px, 126px 126px, auto;
+  opacity: 0.82;
+}
+
+.gemstone-workspace[data-background="icy-glass-surface"] .gemstone-atmosphere::after {
+  background:
+    radial-gradient(ellipse at 48% 44%, rgba(255, 255, 255, 0.28), transparent 50%),
+    radial-gradient(ellipse at 67% 48%, rgba(101, 193, 225, 0.18), transparent 34%),
+    var(--atmosphere-refraction);
+  filter: blur(12px);
+  opacity: var(--gemstone-background-intensity, 0.82);
+}
+
+.gem-pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 320px;
+  min-height: 240px;
+  --material-highlight-position: 75% 20%;
+  --facet-transform: none;
+  transform: translate3d(var(--pane-x, 0), var(--pane-y, 0), 0) rotateX(0.9deg) rotateY(-1.8deg);
+  transform-style: preserve-3d;
+  isolation: isolate;
+  touch-action: none;
+  will-change: transform;
+}
+
+.gem-pane.active {
+  transform: translate3d(var(--pane-x, 0), var(--pane-y, 0), 0) rotateX(0.9deg) rotateY(-1.8deg);
+}
+
+.gemstone-workspace.diagnostic .gem-pane {
+  outline: 2px solid rgba(255, 234, 86, 0.9);
+  outline-offset: 2px;
+}
+
+.gemstone-workspace.diagnostic .gem-pane[data-pane-dragging="true"] {
+  outline-color: rgba(255, 115, 115, 0.95);
+}
+
+.gem-pane-diagnostic-label {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  z-index: 40;
+  display: grid;
+  gap: 1px;
+  max-width: min(360px, 100%);
+  padding: 5px 7px;
+  border: 1px solid rgba(255, 234, 86, 0.75);
+  background: rgba(1, 7, 10, 0.88);
+  color: #fff6a8;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.gem-pane-diagnostic-label strong,
+.gem-pane-diagnostic-label span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gem-shadow {
+  position: absolute;
+  inset: 48px 34px -12px 42px;
+  background:
+    radial-gradient(ellipse at 52% 48%, rgba(0, 0, 0, 0.32), transparent 66%),
+    radial-gradient(ellipse at 58% 62%, rgba(0, 0, 0, 0.18), transparent 74%);
+  filter: blur(16px);
+  opacity: 0.78;
+  pointer-events: none;
+  transform: translate3d(18px, 30px, -80px) skewX(-7deg);
+  will-change: transform, opacity;
+}
+
+.gemstone-workspace[data-background="icy-glass-surface"] .gem-shadow {
+  inset: 50px 36px -10px 42px;
+  background:
+    radial-gradient(ellipse at 52% 42%, rgba(21, 45, 55, 0.22), transparent 64%),
+    radial-gradient(ellipse at 58% 58%, rgba(38, 89, 110, 0.12), transparent 72%);
+  filter: blur(14px);
+  opacity: 0.74;
+  transform: translate3d(14px, 26px, -80px) skewX(-6deg);
+}
+
+.gemstone-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid var(--material-edge);
+  background: var(--material-fill);
+  box-shadow: var(--material-shadow);
+  clip-path: var(--pane-shape);
+}
+
+.gem-pane.active .gemstone-frame {
+  box-shadow:
+    var(--material-shadow),
+    0 0 0 2px rgba(140, 226, 255, 0.46) inset,
+    0 0 34px rgba(122, 221, 255, 0.16);
+}
+
+.gemstone-frame::before,
+.gemstone-frame::after,
+.facet-grid,
+.edge-rim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.gemstone-frame::before {
+  z-index: 1;
+  background: var(--material-depth);
+  opacity: var(--material-depth-opacity);
+}
+
+.gemstone-frame::after {
+  z-index: 3;
+  border: var(--inner-rim);
+  clip-path: var(--inner-shape);
+  opacity: var(--inner-rim-opacity);
+}
+
+.facet-grid {
+  z-index: 2;
+  background: var(--facet-lines);
+  opacity: var(--facet-opacity);
+  transform: var(--facet-transform);
+}
+
+.edge-rim {
+  z-index: 4;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.42), transparent 10% 90%, rgba(255, 255, 255, 0.32)),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.36), transparent 12% 86%, rgba(255, 255, 255, 0.28));
+  mix-blend-mode: screen;
+}
+
+.gem-chrome,
+.gem-actions,
+.terminal-core,
+.gem-content-safe {
+  position: relative;
+  z-index: 5;
+}
+
+.gem-content-safe {
+  position: absolute;
+  inset: var(--pane-safe-inset);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gem-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 5px 0 7px;
+  cursor: grab;
+  user-select: none;
+}
+
+.gem-pane.locked .gem-chrome {
+  cursor: default;
+}
+
+.gem-chrome div {
+  min-width: 0;
+}
+
+.gem-chrome strong,
+.gem-chrome span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gem-chrome strong {
+  color: #f5fbff;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.gem-chrome span {
+  margin-top: 2px;
+  color: rgba(211, 232, 243, 0.72);
+  font-size: 0.72rem;
+}
+
+.pane-command-subtitle {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.gem-pane:hover .pane-command-subtitle,
+.gem-pane.active .pane-command-subtitle,
+.gem-pane:focus-within .pane-command-subtitle {
+  opacity: 1;
+}
+
+.pane-chip-row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 120ms ease;
+}
+
+.gem-pane:hover .pane-chip-row,
+.gem-pane.active .pane-chip-row,
+.gem-pane:focus-within .pane-chip-row {
+  opacity: 0;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(239, 252, 255, 0.58);
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.status-dot-green {
+  color: #48e88c;
+  background: #48e88c;
+}
+
+.status-dot-gray {
+  color: #8a99a3;
+  background: #8a99a3;
+}
+
+.status-dot-amber {
+  color: #ffbd4a;
+  background: #ffbd4a;
+}
+
+.status-dot-red {
+  color: #ff5c57;
+  background: #ff5c57;
+}
+
+.status-chip {
+  min-height: 22px;
+  padding: 3px 7px;
+  border: 1px solid rgba(213, 237, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(3, 10, 16, 0.62);
+  color: rgba(232, 248, 255, 0.86);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.attention-chip {
+  display: none;
+  border-color: rgba(255, 210, 110, 0.38);
+  color: rgba(255, 232, 182, 0.95);
+}
+
+.pane-lock-indicator {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.terminal-core {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(188, 230, 255, 0.18);
+  background:
+    linear-gradient(rgba(2, 8, 12, 0.92), rgba(3, 10, 15, 0.9)),
+    repeating-linear-gradient(0deg, rgba(160, 255, 210, 0.035) 0 1px, transparent 1px 22px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.42) inset,
+    0 0 28px rgba(0, 0, 0, 0.36) inset;
+}
+
+.gem-pane.active .terminal-core {
+  border-color: rgba(140, 226, 255, 0.46);
+  box-shadow:
+    0 0 0 1px rgba(131, 232, 255, 0.14) inset,
+    0 0 34px rgba(0, 0, 0, 0.42) inset,
+    0 0 22px rgba(122, 221, 255, 0.1);
+}
+
+.terminal-surface {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 9px 11px;
+  background: #050b10;
+}
+
+.terminal-surface .xterm {
+  height: 100%;
+}
+
+.terminal-surface .xterm-viewport {
+  background-color: #050b10 !important;
+}
+
+.terminal-empty {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 18px;
+  color: rgba(222, 242, 250, 0.76);
+  text-align: center;
+}
+
+.terminal-empty strong {
+  color: #ecfbff;
+  font-size: 0.96rem;
+}
+
+.terminal-empty span,
+.terminal-empty pre {
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  color: rgba(207, 231, 242, 0.78);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.terminal-empty pre {
+  max-height: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 145, 140, 0.28);
+  border-radius: 7px;
+  background: rgba(53, 17, 19, 0.66);
+  color: #ffd4cf;
+  text-align: left;
+}
+
+.blank-pane-prompt button {
+  min-height: 34px;
+  border-color: rgba(158, 231, 255, 0.5);
+  font-weight: 800;
+}
+
+.stopped-pane-prompt button,
+.terminal-empty button {
+  min-height: 32px;
+  border-color: rgba(123, 231, 176, 0.42);
+  font-weight: 800;
+}
+
+.blank-pane-prompt button {
+  border-color: rgba(158, 231, 255, 0.5);
+}
+
+.pane-icon-controls {
+  position: absolute;
+  top: 5px;
+  right: 78px;
+  z-index: 14;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.gem-pane:hover .pane-icon-controls,
+.gem-pane.active .pane-icon-controls,
+.gem-pane:focus-within .pane-icon-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pane-icon-button {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  place-items: center;
+  padding: 0;
+  border-color: rgba(207, 239, 255, 0.24);
+  background:
+    linear-gradient(150deg, rgba(245, 255, 255, 0.18), rgba(255, 255, 255, 0.04)),
+    rgba(4, 12, 18, 0.84);
+  font-size: 0.9rem;
+  line-height: 1;
+  touch-action: manipulation;
+}
+
+.primary-session-button {
+  border-color: rgba(123, 231, 176, 0.45);
+}
+
+.gemstone-workspace.effects-disabled .gem-pane,
+.gemstone-workspace.effects-disabled .gemstone-frame,
+.gemstone-workspace.effects-disabled .terminal-core,
+.gemstone-workspace.effects-disabled .status-dot,
+.gemstone-workspace.effects-disabled .pane-icon-button {
+  filter: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.gemstone-workspace.effects-disabled .gem-shadow,
+.gemstone-workspace.effects-disabled .gemstone-frame::before,
+.gemstone-workspace.effects-disabled .gemstone-frame::after,
+.gemstone-workspace.effects-disabled .facet-grid,
+.gemstone-workspace.effects-disabled .edge-rim {
+  display: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.resize-handle {
+  position: absolute;
+  z-index: 10;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.resize-handle::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(140, 226, 255, 0.5);
+  content: "";
+  opacity: 0;
+}
+
+.gem-pane:hover .resize-handle::after,
+.resize-handle:focus-visible::after {
+  opacity: 0.62;
+}
+
+.resize-handle:disabled {
+  display: none;
+}
+
+.resize-n,
+.resize-s {
+  left: 52px;
+  right: 52px;
+  height: 14px;
+  cursor: ns-resize;
+}
+
+.resize-n {
+  top: 0;
+}
+
+.resize-s {
+  bottom: 0;
+}
+
+.resize-e,
+.resize-w {
+  top: 52px;
+  bottom: 52px;
+  width: 14px;
+  cursor: ew-resize;
+}
+
+.resize-e {
+  right: 0;
+}
+
+.resize-w {
+  left: 0;
+}
+
+.resize-ne,
+.resize-nw,
+.resize-se,
+.resize-sw {
+  width: 34px;
+  height: 34px;
+}
+
+.resize-ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+
+.resize-nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.resize-se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+
+.resize-sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+.display-style-selector {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  z-index: 80;
+  transform: translateX(-50%);
+}
+
+.display-style-selector-expanded {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(198, 235, 255, 0.18);
+  background: rgba(4, 11, 17, 0.76);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+}
+
+.display-style-copy {
+  display: grid;
+  min-width: 186px;
+  padding: 0 8px 0 10px;
+}
+
+.display-style-copy strong {
+  color: #f4fbff;
+  font-size: 0.78rem;
+}
+
+.display-style-copy span {
+  color: rgba(207, 231, 242, 0.72);
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+.display-style-compact {
+  display: inline-grid;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 0 10px;
+  border-color: rgba(163, 230, 255, 0.34);
+  background:
+    linear-gradient(145deg, rgba(197, 244, 255, 0.18), rgba(255, 255, 255, 0.03)),
+    rgba(4, 11, 17, 0.82);
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.display-style-compact span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.display-style-collapse {
+  min-width: 78px;
+  min-height: 34px;
+  font-size: 0.72rem;
+}
+
+.treatment-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.treatment-switch button {
+  min-width: 132px;
+  min-height: 34px;
+  font-size: 0.78rem;
+}
+
+.treatment-switch button.selected {
+  border-color: rgba(163, 230, 255, 0.58);
+  background:
+    linear-gradient(135deg, rgba(158, 231, 255, 0.2), rgba(255, 255, 255, 0.04)),
+    rgba(14, 35, 49, 0.92);
+}
+
+.floating-command-crystal {
+  position: absolute;
+  right: 38px;
+  bottom: 38px;
+  z-index: 92;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.command-add-pane {
+  min-height: 38px;
+  padding: 0 15px;
+  border-color: rgba(158, 231, 255, 0.5);
+  background:
+    linear-gradient(135deg, rgba(240, 255, 255, 0.22), rgba(108, 219, 255, 0.12)),
+    rgba(5, 17, 24, 0.92);
+  color: #f3fcff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.command-icon-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  min-height: 0;
+  padding: 0;
+  border-color: rgba(168, 231, 255, 0.38);
+  background:
+    linear-gradient(145deg, rgba(246, 254, 255, 0.22), rgba(104, 207, 242, 0.08)),
+    rgba(5, 17, 24, 0.86);
+}
+
+.command-icon-button span {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.command-background-button span {
+  border: 1px solid rgba(235, 252, 255, 0.8);
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95), transparent 38%),
+    linear-gradient(135deg, rgba(220, 250, 255, 0.86), rgba(105, 194, 226, 0.38));
+  clip-path: polygon(50% 0, 92% 26%, 78% 84%, 22% 84%, 8% 26%);
+}
+
+.command-pane-style-button span {
+  border: 1px solid rgba(235, 252, 255, 0.82);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(118, 207, 237, 0.2)),
+    rgba(6, 19, 28, 0.4);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.command-crystal {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background:
+    linear-gradient(135deg, rgba(240, 255, 255, 0.9), rgba(108, 219, 255, 0.36) 44%, rgba(17, 45, 69, 0.9)),
+    linear-gradient(45deg, transparent 48%, rgba(255, 255, 255, 0.72) 49%, transparent 53%);
+  clip-path: polygon(50% 0, 88% 18%, 100% 58%, 66% 100%, 25% 92%, 0 42%, 18% 13%);
+}
+
+.command-crystal span {
+  position: absolute;
+  inset: 14px 19px;
+  background: rgba(2, 8, 12, 0.76);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.command-menu {
+  position: absolute;
+  right: 34px;
+  bottom: 94px;
+  z-index: 91;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(112px, 1fr));
+  gap: 7px;
+  width: min(420px, calc(100vw - 68px));
+  max-height: min(520px, calc(100vh - 128px));
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid rgba(198, 235, 255, 0.2);
+  background: rgba(5, 13, 19, 0.88);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38);
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+}
+
+.background-popover {
+  position: absolute;
+  right: 38px;
+  bottom: 94px;
+  z-index: 94;
+  display: grid;
+  width: min(318px, calc(100vw - 32px));
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(201, 235, 255, 0.22);
+  background: rgba(5, 14, 20, 0.9);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+}
+
+.background-popover header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.background-popover header strong {
+  font-size: 0.78rem;
+}
+
+.background-popover header button {
+  min-height: 28px;
+  font-size: 0.72rem;
+}
+
+.pane-action-menu {
+  position: fixed;
+  z-index: 120;
+  display: grid;
+  gap: 10px;
+  width: min(324px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 24px));
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(198, 235, 255, 0.24);
+  background: rgba(4, 12, 18, 0.96);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.pane-action-menu section,
+.pane-menu-group {
+  display: grid;
+  gap: 6px;
+}
+
+.pane-action-menu h2,
+.pane-menu-group > span {
+  margin: 0;
+  color: rgba(187, 215, 228, 0.78);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pane-action-menu button {
+  justify-content: start;
+  min-height: 32px;
+  text-align: left;
+}
+
+.pane-action-menu button small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(212, 229, 238, 0.68);
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+.material-swatch-grid,
+.segmented-menu-row {
+  display: grid;
+  gap: 5px;
+}
+
+.material-swatch-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.segmented-menu-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.material-swatch {
+  position: relative;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.material-swatch span {
+  position: absolute;
+  inset: auto 3px 3px;
+  overflow: hidden;
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-align: center;
+  text-overflow: ellipsis;
+}
+
+.material-swatch-diamond {
+  background: linear-gradient(135deg, #f7feff, #7dcaff);
+}
+
+.material-swatch-onyx {
+  background: linear-gradient(135deg, #e4edf4, #05080c 58%);
+}
+
+.material-swatch-opal {
+  background: linear-gradient(135deg, #effff7, #77d8cd 45%, #ffadd9);
+}
+
+.material-swatch-amethyst {
+  background: linear-gradient(135deg, #ecd0ff, #6929a4);
+}
+
+.material-swatch-cobalt {
+  background: linear-gradient(135deg, #bee5ff, #0a3a87);
+}
+
+.material-swatch-emerald {
+  background: linear-gradient(135deg, #cbffe4, #0b6f4c);
+}
+
+.material-swatch-ruby {
+  background: linear-gradient(135deg, #ffd1da, #9d102d);
+}
+
+.pane-action-menu button.selected,
+.material-swatch.selected {
+  border-color: rgba(163, 230, 255, 0.68);
+  box-shadow:
+    0 0 0 1px rgba(163, 230, 255, 0.25) inset,
+    0 0 18px rgba(122, 221, 255, 0.18);
+}
+
+.profile-chooser {
+  position: absolute;
+  right: 34px;
+  bottom: 94px;
+  z-index: 93;
+  display: grid;
+  gap: 9px;
+  width: min(340px, calc(100vw - 68px));
+  max-height: min(420px, calc(100vh - 132px));
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(198, 235, 255, 0.22);
+  background: rgba(5, 13, 19, 0.92);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.42);
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+}
+
+.profile-chooser header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.profile-chooser header strong {
+  font-size: 0.84rem;
+}
+
+.profile-chooser header button {
+  min-height: 28px;
+  font-size: 0.72rem;
+}
+
+.new-pane-form {
+  display: grid;
+  gap: 10px;
+}
+
+.new-pane-form label {
+  display: grid;
+  gap: 5px;
+}
+
+.new-pane-form label span {
+  color: rgba(187, 215, 228, 0.78);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.create-pane-button {
+  margin-top: 2px;
+  min-height: 36px;
+  border-color: rgba(158, 231, 255, 0.42);
+  font-weight: 800;
+}
+
+
+.canvas-empty-state {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(340px, calc(100vw - 48px));
+  padding: 20px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(198, 235, 255, 0.2);
+  background: rgba(5, 13, 19, 0.82);
+  text-align: center;
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+}
+
+.canvas-empty-state strong {
+  color: #f3fcff;
+  font-size: 0.96rem;
+}
+
+.canvas-empty-state span {
+  color: rgba(209, 232, 242, 0.78);
+  font-size: 0.8rem;
+}
+
+.gem-inspector {
+  position: absolute;
+  top: 84px;
+  right: 32px;
+  z-index: 100;
+  display: grid;
+  gap: 15px;
+  width: min(360px, calc(100vw - 64px));
+  max-height: calc(100vh - 116px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(201, 235, 255, 0.26);
+  background:
+    linear-gradient(132deg, rgba(15, 27, 39, 0.96), rgba(5, 12, 19, 0.92)),
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.08) 51%, transparent 54%);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  clip-path: polygon(8% 0, 92% 0, 100% 12%, 100% 88%, 92% 100%, 8% 100%, 0 88%, 0 12%);
+  transform: translateX(calc(100% + 48px));
+  transition: transform 180ms ease;
+}
+
+.gem-inspector.open {
+  transform: translateX(0);
+}
+
+.close-inspector {
+  justify-self: end;
+}
+
+.inspector-add-pane {
+  justify-self: stretch;
+  border-color: rgba(158, 231, 255, 0.42);
+  font-weight: 800;
+}
+
+.background-selector,
+.inspector-section {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(201, 235, 255, 0.18);
+  background: rgba(3, 10, 15, 0.4);
+}
+
+.background-selector header,
+.inspector-section header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.background-selector header strong,
+.inspector-section header strong {
+  font-size: 0.78rem;
+}
+
+.background-selector header button,
+.inspector-section header button {
+  min-height: 28px;
+  font-size: 0.72rem;
+}
+
+.saved-layout-list {
+  display: grid;
+  gap: 8px;
+}
+
+.saved-layout-row {
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(201, 235, 255, 0.14);
+  background: rgba(1, 7, 11, 0.34);
+}
+
+.saved-layout-row > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.saved-layout-row strong,
+.saved-layout-row span,
+.inspector-note {
+  min-width: 0;
+  margin: 0;
+}
+
+.saved-layout-row strong {
+  overflow: hidden;
+  color: #f3fcff;
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-layout-row span,
+.inspector-note {
+  color: rgba(207, 231, 242, 0.72);
+  font-size: 0.7rem;
+}
+
+.saved-layout-actions,
+.recovery-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.saved-layout-actions button,
+.recovery-action-grid button {
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 7px;
+  overflow: hidden;
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.background-compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.background-compact span {
+  color: rgba(207, 231, 242, 0.72);
+  font-size: 0.72rem;
+}
+
+.background-compact strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.background-preset-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.reference-backgrounds {
+  display: grid;
+  gap: 6px;
+}
+
+.reference-backgrounds summary {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(215, 240, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(3, 10, 15, 0.34);
+  color: rgba(225, 242, 250, 0.78);
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.reference-backgrounds[open] summary {
+  margin-bottom: 6px;
+}
+
+.background-preset {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 4px;
+  min-width: 0;
+  min-height: 84px;
+  overflow: hidden;
+  padding: 10px;
+  text-align: left;
+}
+
+.background-preset::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0 32%, rgba(1, 6, 10, 0.82) 100%);
+  content: "";
+}
+
+.background-preset-name {
+  position: relative;
+  min-width: 0;
+  color: #f7fcff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.65);
+}
+
+.background-preset-description {
+  position: relative;
+  display: -webkit-box;
+  overflow: hidden;
+  min-width: 0;
+  color: rgba(220, 239, 247, 0.78);
+  font-size: 0.66rem;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.background-preset-meta {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.background-preset-meta small {
+  min-width: 0;
+  padding: 2px 5px;
+  border: 1px solid rgba(215, 240, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(3, 10, 15, 0.46);
+  color: rgba(234, 247, 255, 0.84);
+  font-size: 0.56rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.background-preset-simple-glass,
+.background-preset-simple-diamond,
+.background-preset-simple-onyx,
+.background-preset-simple-amethyst,
+.background-preset-simple-cobalt,
+.background-preset-simple-emerald,
+.background-preset-simple-ruby,
+.background-preset-simple-opal {
+  background:
+    radial-gradient(ellipse at 24% 18%, var(--swatch-glow), transparent 36%),
+    linear-gradient(112deg, transparent 0 42%, var(--swatch-line) 43%, transparent 56%),
+    linear-gradient(135deg, var(--swatch-start), var(--swatch-end));
+}
+
+.background-preset-simple-glass {
+  --swatch-glow: rgba(255, 255, 255, 0.82);
+  --swatch-line: rgba(255, 255, 255, 0.3);
+  --swatch-start: #eef7fa;
+  --swatch-end: #90acba;
+}
+
+.background-preset-simple-diamond {
+  --swatch-glow: rgba(255, 255, 255, 0.9);
+  --swatch-line: rgba(255, 255, 255, 0.32);
+  --swatch-start: #fbfeff;
+  --swatch-end: #b4c8d2;
+}
+
+.background-preset-simple-onyx {
+  --swatch-glow: rgba(220, 239, 249, 0.22);
+  --swatch-line: rgba(220, 239, 249, 0.1);
+  --swatch-start: #030507;
+  --swatch-end: #1a2027;
+}
+
+.background-preset-simple-amethyst {
+  --swatch-glow: rgba(255, 255, 255, 0.58);
+  --swatch-line: rgba(226, 197, 255, 0.24);
+  --swatch-start: #efe7f7;
+  --swatch-end: #705681;
+}
+
+.background-preset-simple-cobalt {
+  --swatch-glow: rgba(255, 255, 255, 0.52);
+  --swatch-line: rgba(161, 212, 255, 0.22);
+  --swatch-start: #e4eff7;
+  --swatch-end: #315f8d;
+}
+
+.background-preset-simple-emerald {
+  --swatch-glow: rgba(255, 255, 255, 0.5);
+  --swatch-line: rgba(144, 229, 188, 0.22);
+  --swatch-start: #e5f5ef;
+  --swatch-end: #3f7b63;
+}
+
+.background-preset-simple-ruby {
+  --swatch-glow: rgba(255, 255, 255, 0.5);
+  --swatch-line: rgba(255, 168, 183, 0.2);
+  --swatch-start: #f6e5e8;
+  --swatch-end: #7d3c4a;
+}
+
+.background-preset-simple-opal {
+  --swatch-glow: rgba(255, 255, 255, 0.7);
+  --swatch-line: rgba(181, 235, 226, 0.22);
+  --swatch-start: #f1faf6;
+  --swatch-end: #92abb2;
+}
+
+.background-preset-dark-glass {
+  background:
+    radial-gradient(ellipse at 22% 18%, rgba(220, 239, 249, 0.22), transparent 36%),
+    linear-gradient(124deg, transparent 0 42%, rgba(220, 239, 249, 0.1) 43%, transparent 54%),
+    linear-gradient(135deg, #030507, #1a2027);
+}
+
+.background-preset-custom-local-asset {
+  background:
+    linear-gradient(145deg, rgba(235, 246, 250, 0.18), transparent 42%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px),
+    linear-gradient(135deg, #16222b, #394c57 48%, #10161c);
+}
+
+.background-preset-icy-glass-surface {
+  background:
+    radial-gradient(ellipse at 48% 42%, rgba(255, 255, 255, 0.9), transparent 30%),
+    radial-gradient(ellipse at 20% 105%, transparent 0 46%, rgba(116, 166, 188, 0.28) 47%, transparent 51%),
+    linear-gradient(118deg, transparent 0 30%, rgba(255, 255, 255, 0.34) 31%, transparent 44%),
+    linear-gradient(28deg, transparent 0 56%, rgba(133, 183, 205, 0.34) 57%, transparent 66%),
+    repeating-linear-gradient(172deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 19px),
+    linear-gradient(135deg, #f8fdff, #c8dde6 52%, #8baeba);
+}
+
+.background-preset-original-grid {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.1) 19%, transparent 21%),
+    radial-gradient(circle at 22% 16%, rgba(137, 219, 255, 0.24), transparent 30%),
+    radial-gradient(circle at 78% 74%, rgba(160, 255, 204, 0.16), transparent 34%),
+    linear-gradient(142deg, #05070a, #101923 48%, #040609);
+  background-size:
+    18px 18px,
+    18px 18px,
+    auto,
+    auto,
+    auto,
+    auto;
+}
+
+.background-preset.selected {
+  border-color: rgba(163, 230, 255, 0.74);
+  box-shadow:
+    0 0 0 1px rgba(163, 230, 255, 0.32) inset,
+    0 0 18px rgba(122, 221, 255, 0.2);
+}
+
+.gem-inspector h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.inspector-pane-id {
+  margin: -8px 0 0;
+  color: rgba(210, 235, 247, 0.76);
+  font-size: 0.78rem;
+}
+
+.gem-inspector label {
+  display: grid;
+  gap: 6px;
+}
+
+.gem-inspector label small {
+  color: rgba(210, 235, 247, 0.68);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.gem-inspector label span,
+.gem-inspector dt {
+  color: rgba(187, 215, 228, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gem-inspector dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.gem-inspector dl div {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.gem-inspector dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: rgba(234, 247, 255, 0.9);
+  font-size: 0.82rem;
+}
+
+.treatment-sharp {
+  --pane-shape: polygon(5% 0, 80% 0, 100% 16%, 96% 77%, 84% 100%, 14% 94%, 0 72%, 3% 18%);
+  --inner-shape: polygon(7% 2%, 78% 0, 96% 17%, 92% 74%, 82% 95%, 15% 90%, 4% 70%, 6% 20%);
+  --terminal-shape: polygon(4% 0, 96% 0, 100% 9%, 98% 91%, 94% 100%, 5% 100%, 0 91%, 2% 8%);
+  --terminal-core-margin: 4px 52px 0;
+  --pane-safe-inset: 32px 58px 34px 42px;
+  --facet-opacity: 0.72;
+  --inner-rim: 1px solid rgba(255, 255, 255, 0.24);
+  --inner-rim-opacity: 0.82;
+}
+
+.treatment-polished {
+  --pane-shape: polygon(14% 0, 86% 0, 100% 24%, 90% 100%, 10% 100%, 0 24%);
+  --inner-shape: polygon(18% 6%, 82% 4%, 94% 25%, 84% 92%, 16% 92%, 6% 25%);
+  --terminal-shape: polygon(7% 0, 93% 0, 100% 12%, 92% 100%, 8% 100%, 0 12%);
+  --terminal-core-margin: 8px 60px 3px;
+  --pane-safe-inset: 34px 60px 34px 52px;
+  --facet-opacity: 0.45;
+  --inner-rim: 1px solid rgba(255, 255, 255, 0.22);
+  --inner-rim-opacity: 0.68;
+}
+
+.treatment-architectural {
+  --pane-shape: polygon(0 0, 78% 0, 100% 22%, 100% 100%, 22% 100%, 0 78%);
+  --inner-shape: polygon(4% 4%, 76% 4%, 95% 23%, 95% 95%, 23% 95%, 4% 76%);
+  --terminal-shape: polygon(0 0, 92% 0, 100% 10%, 100% 100%, 10% 100%, 0 92%);
+  --terminal-core-margin: 2px 46px 0 54px;
+  --pane-safe-inset: 34px 62px 36px 46px;
+  --facet-opacity: 0.58;
+  --inner-rim: 1px solid rgba(255, 255, 255, 0.18);
+  --inner-rim-opacity: 0.74;
+}
+
+.orientation-left {
+  --material-highlight-position: 25% 20%;
+  --facet-transform: scaleX(-1);
+}
+
+.orientation-symmetric {
+  --material-highlight-position: 50% 14%;
+}
+
+.treatment-sharp.orientation-left {
+  --pane-shape: polygon(95% 0, 20% 0, 0 16%, 4% 77%, 16% 100%, 86% 94%, 100% 72%, 97% 18%);
+  --inner-shape: polygon(93% 2%, 22% 0, 4% 17%, 8% 74%, 18% 95%, 85% 90%, 96% 70%, 94% 20%);
+  --pane-safe-inset: 32px 42px 34px 58px;
+}
+
+.treatment-sharp.orientation-symmetric {
+  --pane-shape: polygon(10% 0, 90% 0, 100% 18%, 94% 82%, 84% 100%, 16% 100%, 6% 82%, 0 18%);
+  --inner-shape: polygon(12% 4%, 88% 4%, 94% 20%, 89% 88%, 79% 96%, 21% 96%, 11% 88%, 6% 20%);
+  --pane-safe-inset: 34px 54px 34px;
+}
+
+.treatment-polished.orientation-left {
+  --pane-safe-inset: 34px 52px 34px 60px;
+}
+
+.treatment-polished.orientation-symmetric {
+  --pane-safe-inset: 34px 56px;
+}
+
+.treatment-architectural.orientation-left {
+  --pane-shape: polygon(100% 0, 22% 0, 0 22%, 0 100%, 78% 100%, 100% 78%);
+  --inner-shape: polygon(96% 4%, 24% 4%, 5% 23%, 5% 95%, 77% 95%, 96% 76%);
+  --pane-safe-inset: 34px 46px 36px 62px;
+}
+
+.treatment-architectural.orientation-symmetric {
+  --pane-shape: polygon(10% 0, 90% 0, 100% 14%, 100% 86%, 90% 100%, 10% 100%, 0 86%, 0 14%);
+  --inner-shape: polygon(13% 5%, 87% 5%, 95% 16%, 95% 84%, 87% 95%, 13% 95%, 5% 84%, 5% 16%);
+  --pane-safe-inset: 34px 54px 36px;
+}
+
+.material-diamond {
+  --material-edge: rgba(232, 251, 255, 0.58);
+  --material-fill:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.24), rgba(142, 223, 255, 0.13) 26%, rgba(255, 255, 255, 0.08) 48%, rgba(122, 203, 255, 0.18)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(255, 255, 255, 0.52), transparent 15%),
+    rgba(184, 232, 255, 0.13);
+  --material-depth:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 19% 68%, rgba(95, 190, 255, 0.18)),
+    linear-gradient(35deg, transparent 46%, rgba(255, 255, 255, 0.22) 48%, transparent 53%);
+  --material-depth-opacity: 0.84;
+  --material-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.52),
+    0 8px 20px rgba(131, 215, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.24) inset,
+    0 0 42px rgba(255, 255, 255, 0.12) inset;
+  --facet-lines:
+    linear-gradient(26deg, transparent 18%, rgba(255, 255, 255, 0.22) 19%, transparent 21% 50%, rgba(255, 255, 255, 0.14) 51%, transparent 53%),
+    linear-gradient(148deg, transparent 12%, rgba(255, 255, 255, 0.18) 13%, transparent 15% 70%, rgba(255, 255, 255, 0.2) 71%, transparent 73%);
+}
+
+.material-amethyst {
+  --material-edge: rgba(217, 174, 255, 0.64);
+  --material-fill:
+    linear-gradient(132deg, rgba(180, 105, 255, 0.44), rgba(68, 26, 115, 0.58) 42%, rgba(154, 82, 220, 0.34)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(235, 211, 255, 0.54), transparent 16%),
+    rgba(45, 15, 78, 0.72);
+  --material-depth:
+    linear-gradient(128deg, rgba(245, 226, 255, 0.22), transparent 22% 62%, rgba(102, 43, 160, 0.35)),
+    linear-gradient(42deg, transparent 48%, rgba(236, 206, 255, 0.18) 50%, transparent 55%);
+  --material-depth-opacity: 0.9;
+  --material-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.58),
+    0 14px 34px rgba(102, 43, 160, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 0 48px rgba(184, 102, 255, 0.26) inset;
+  --facet-lines:
+    linear-gradient(24deg, transparent 16%, rgba(235, 211, 255, 0.18) 17%, transparent 20% 52%, rgba(198, 132, 255, 0.16) 53%, transparent 56%),
+    linear-gradient(145deg, transparent 13%, rgba(255, 255, 255, 0.15) 14%, transparent 16% 72%, rgba(224, 188, 255, 0.2) 73%, transparent 75%);
+}
+
+.material-onyx {
+  --material-edge: rgba(222, 231, 238, 0.42);
+  --material-fill:
+    linear-gradient(128deg, rgba(207, 224, 238, 0.14), rgba(2, 6, 10, 0.84) 42%, rgba(80, 94, 104, 0.28)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(245, 250, 255, 0.24), transparent 16%),
+    rgba(5, 8, 12, 0.88);
+  --material-depth:
+    linear-gradient(132deg, rgba(230, 242, 255, 0.12), transparent 20% 60%, rgba(0, 0, 0, 0.42)),
+    linear-gradient(38deg, transparent 48%, rgba(230, 240, 248, 0.12) 50%, transparent 55%);
+  --material-depth-opacity: 0.92;
+  --material-shadow:
+    0 26px 60px rgba(0, 0, 0, 0.68),
+    0 10px 24px rgba(190, 215, 230, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 38px rgba(210, 225, 235, 0.13) inset;
+  --facet-lines:
+    linear-gradient(28deg, transparent 18%, rgba(240, 248, 255, 0.12) 19%, transparent 22% 54%, rgba(255, 255, 255, 0.08) 55%, transparent 58%),
+    linear-gradient(146deg, transparent 14%, rgba(255, 255, 255, 0.1) 15%, transparent 18% 74%, rgba(220, 230, 238, 0.12) 75%, transparent 77%);
+}
+
+.material-opal {
+  --material-edge: rgba(223, 255, 241, 0.58);
+  --material-fill:
+    linear-gradient(126deg, rgba(238, 255, 248, 0.28), rgba(115, 213, 205, 0.24) 34%, rgba(255, 172, 216, 0.18) 64%, rgba(96, 184, 255, 0.2)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(255, 255, 255, 0.5), transparent 17%),
+    rgba(189, 239, 226, 0.24);
+  --material-depth:
+    linear-gradient(134deg, rgba(255, 255, 255, 0.2), transparent 22% 60%, rgba(99, 211, 199, 0.22)),
+    linear-gradient(38deg, transparent 42%, rgba(255, 179, 222, 0.22) 44%, transparent 50%),
+    linear-gradient(152deg, transparent 58%, rgba(118, 199, 255, 0.22) 60%, transparent 66%);
+  --material-depth-opacity: 0.82;
+  --material-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.5),
+    0 12px 28px rgba(115, 213, 205, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
+    0 0 46px rgba(226, 255, 244, 0.16) inset;
+  --facet-lines:
+    linear-gradient(22deg, transparent 15%, rgba(255, 255, 255, 0.16) 16%, transparent 19% 51%, rgba(255, 181, 222, 0.16) 52%, transparent 55%),
+    linear-gradient(146deg, transparent 14%, rgba(176, 238, 255, 0.18) 15%, transparent 18% 72%, rgba(255, 255, 255, 0.18) 73%, transparent 75%);
+}
+
+.material-cobalt {
+  --material-edge: rgba(126, 192, 255, 0.6);
+  --material-fill:
+    linear-gradient(128deg, rgba(79, 154, 255, 0.42), rgba(6, 37, 88, 0.72) 46%, rgba(31, 91, 174, 0.38)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(200, 232, 255, 0.44), transparent 16%),
+    rgba(8, 39, 91, 0.74);
+  --material-depth:
+    linear-gradient(132deg, rgba(205, 232, 255, 0.18), transparent 21% 62%, rgba(2, 27, 72, 0.38)),
+    linear-gradient(39deg, transparent 47%, rgba(133, 196, 255, 0.18) 49%, transparent 55%);
+  --material-depth-opacity: 0.9;
+  --material-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.58),
+    0 12px 34px rgba(42, 118, 225, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 48px rgba(76, 148, 255, 0.22) inset;
+  --facet-lines:
+    linear-gradient(24deg, transparent 16%, rgba(197, 229, 255, 0.17) 17%, transparent 20% 52%, rgba(90, 169, 255, 0.16) 53%, transparent 56%),
+    linear-gradient(145deg, transparent 13%, rgba(255, 255, 255, 0.13) 14%, transparent 16% 72%, rgba(145, 203, 255, 0.2) 73%, transparent 75%);
+}
+
+.material-emerald {
+  --material-edge: rgba(117, 236, 177, 0.58);
+  --material-fill:
+    linear-gradient(130deg, rgba(74, 220, 147, 0.38), rgba(10, 83, 59, 0.72) 44%, rgba(35, 167, 112, 0.34)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(203, 255, 226, 0.46), transparent 16%),
+    rgba(8, 72, 51, 0.76);
+  --material-depth:
+    linear-gradient(132deg, rgba(215, 255, 232, 0.18), transparent 21% 62%, rgba(4, 62, 45, 0.36)),
+    linear-gradient(39deg, transparent 47%, rgba(123, 237, 176, 0.18) 49%, transparent 55%);
+  --material-depth-opacity: 0.9;
+  --material-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.56),
+    0 12px 34px rgba(36, 166, 104, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 48px rgba(64, 220, 139, 0.22) inset;
+  --facet-lines:
+    linear-gradient(24deg, transparent 16%, rgba(213, 255, 233, 0.17) 17%, transparent 20% 52%, rgba(97, 231, 158, 0.16) 53%, transparent 56%),
+    linear-gradient(145deg, transparent 13%, rgba(255, 255, 255, 0.13) 14%, transparent 16% 72%, rgba(137, 238, 180, 0.2) 73%, transparent 75%);
+}
+
+.material-ruby {
+  --material-edge: rgba(255, 126, 147, 0.62);
+  --material-fill:
+    linear-gradient(130deg, rgba(255, 80, 114, 0.42), rgba(98, 10, 27, 0.76) 44%, rgba(193, 31, 62, 0.36)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(255, 210, 218, 0.46), transparent 16%),
+    rgba(91, 8, 24, 0.78);
+  --material-depth:
+    linear-gradient(132deg, rgba(255, 219, 225, 0.18), transparent 21% 62%, rgba(85, 6, 21, 0.38)),
+    linear-gradient(39deg, transparent 47%, rgba(255, 118, 146, 0.2) 49%, transparent 55%);
+  --material-depth-opacity: 0.91;
+  --material-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.58),
+    0 12px 34px rgba(184, 31, 58, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 0 48px rgba(255, 78, 113, 0.22) inset;
+  --facet-lines:
+    linear-gradient(24deg, transparent 16%, rgba(255, 219, 225, 0.17) 17%, transparent 20% 52%, rgba(255, 118, 146, 0.16) 53%, transparent 56%),
+    linear-gradient(145deg, transparent 13%, rgba(255, 255, 255, 0.13) 14%, transparent 16% 72%, rgba(255, 154, 171, 0.2) 73%, transparent 75%);
+}
+
+@media (max-width: 900px) {
+  .display-style-selector {
+    top: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .display-style-selector-expanded {
+    align-items: stretch;
+  }
+
+  .display-style-copy {
+    min-width: 124px;
+  }
+
+  .treatment-switch {
+    flex: 1 1 auto;
+  }
+
+  .treatment-switch button {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0 6px;
+    font-size: 0.72rem;
+  }
+
+  .gem-content-safe {
+    inset: var(--pane-safe-inset-compact, var(--pane-safe-inset));
+  }
+
+  .floating-command-crystal {
+    right: 18px;
+    bottom: 18px;
+  }
+
+  .command-menu {
+    right: 18px;
+    bottom: 78px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 72px);
+  }
+
+  .background-popover {
+    right: 18px;
+    bottom: 78px;
+  }
+
+  .profile-chooser {
+    right: 18px;
+    bottom: 78px;
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+out/
+build/
+.cache/
+coverage/
+logs/
+tmp/
+temp/
+.env
+.env.*
+*.log
+*.tmp
+.DS_Store
+.claude/
