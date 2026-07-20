@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.2.9
+
+Detached pane configuration and cross-platform release polish.
+
+### Added
+
+- Added an editor inside detached panes for changing the pane profile, material, treatment, and facet orientation without first returning it to the main workspace.
+- Added synchronization between detached panes and the main Gemstone workspace so detached-pane changes update the original pane state.
+- Added tests for detached pane transparency and editor styling.
+
+### Changed
+
+- Bumped the app and package version to 0.2.9.
+- Published macOS DMG, Windows NSIS installer, and Linux AppImage release assets from GitHub Actions.
+
+## 0.2.8
+
+Detached pane behavior and desktop-window polish.
+
+### Added
+
+- Added detachable Gemstone panes that move a live terminal session into a separate desktop window.
+- Added lock, pin, and return controls for detached panes.
+- Added Linux-oriented detached-window lock handling so locked detached panes stop dragging/resizing at the native window layer.
+
+### Changed
+
+- Detached panes now hide their original canvas pane while detached and return it when the detached window closes.
+- Preserved detached pane shape, size, transparency, and material styling more closely across desktop windows.
+- Bumped the app and package version to 0.2.8.
+
 ## 0.2.7
 
 Gemstone profile chooser fix for fresh macOS installs.
