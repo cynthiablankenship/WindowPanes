@@ -1,45 +1,72 @@
 import { FitAddon } from '@xterm/addon-fit'
 import { Terminal } from '@xterm/xterm'
 import '@xterm/xterm/css/xterm.css'
-import type { TerminalDataEvent } from '../shared'
+import {
+  BUILT_IN_PROFILES,
+  DETACHED_PANE_CONFIG_CHANNEL,
+  type CommandProfile,
+  type DetachedPaneAppearanceDraft,
+  type DetachedPaneConfigMessage,
+  type DetachedPaneConfigSnapshot,
+  type TerminalDataEvent
+} from '../shared'
+import {
+  FACET_ORIENTATIONS,
+  MATERIALS,
+  TREATMENTS,
+  type FacetOrientation,
+  type GemMaterial,
+  type GemTreatment
+} from '../renderer-gemstone/domain/gemstoneState'
 import '../renderer-gemstone/styles.css'
 import './styles.css'
 
 const root = document.getElementById('root')
 const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+const paneId = params.get('paneId')
 const ptyId = params.get('ptyId')
 const title = params.get('title') ?? 'Detached Pane'
 const subtitle = params.get('subtitle') || 'Detached desktop pane'
-const material = getAllowedValue(params.get('material'), ['diamond', 'onyx', 'opal', 'amethyst', 'cobalt', 'emerald', 'ruby'], 'diamond')
-const treatment = getAllowedValue(params.get('treatment'), ['sharp', 'polished', 'architectural'], 'sharp')
-const facetOrientation = getAllowedValue(params.get('facetOrientation'), ['right', 'left', 'symmetric'], 'right')
+const material = getAllowedValue(params.get('material'), MATERIALS, 'diamond')
+const treatment = getAllowedValue(params.get('treatment'), TREATMENTS, 'sharp')
+const facetOrientation = getAllowedValue(params.get('facetOrientation'), FACET_ORIENTATIONS, 'right')
 
-if (!root || !ptyId) {
+if (!root || !paneId || !ptyId) {
   document.body.textContent = 'Detached pane is missing a terminal session.'
 } else {
   renderDetachedPane(root, {
+    paneId,
     ptyId,
     title,
     subtitle,
+    profileId: null,
     material,
     treatment,
-    facetOrientation
+    facetOrientation,
+    status: 'running',
+    profiles: [...BUILT_IN_PROFILES]
   })
 }
 
 interface DetachedPaneModel {
-  ptyId: string
+  paneId: string
+  ptyId: string | null
   title: string
   subtitle: string
-  material: string
-  treatment: string
-  facetOrientation: string
+  profileId: string | null
+  material: GemMaterial
+  treatment: GemTreatment
+  facetOrientation: FacetOrientation
+  status: DetachedPaneConfigSnapshot['status']
+  profiles: CommandProfile[]
 }
 
 function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): void {
+  let currentPane: DetachedPaneModel = { ...pane, profiles: [...pane.profiles] }
+  let lastKnownPtyId = pane.ptyId
   rootElement.innerHTML = `
     <main class="gemstone-workspace detached-workspace">
-      <article class="gem-pane detached-pane active material-${pane.material} treatment-${pane.treatment} orientation-${pane.facetOrientation} status-running" data-pane-visible="true" data-pane-selected="true" data-pane-locked="false" data-pane-status="running" style="--pane-x: 0px; --pane-y: 0px;">
+      <article class="gem-pane detached-pane active material-${currentPane.material} treatment-${currentPane.treatment} orientation-${currentPane.facetOrientation} status-${currentPane.status}" data-pane-visible="true" data-pane-selected="true" data-pane-locked="false" data-pane-status="${currentPane.status}" style="--pane-x: 0px; --pane-y: 0px;">
         <div class="gem-shadow" aria-hidden="true"></div>
         <div class="gemstone-frame">
           <div class="facet-grid" aria-hidden="true"></div>
@@ -47,8 +74,8 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
           <div class="gem-content-safe">
             <header class="gem-chrome detached-titlebar">
               <div>
-                <strong>${escapeHtml(pane.title)}</strong>
-                <span class="pane-command-subtitle">${escapeHtml(pane.subtitle)}</span>
+                <strong data-title>${escapeHtml(currentPane.title)}</strong>
+                <span class="pane-command-subtitle" data-subtitle>${escapeHtml(currentPane.subtitle)}</span>
               </div>
               <div class="pane-chip-row">
                 <span aria-label="Running" class="status-dot status-dot-green" title="Running"></span>
@@ -61,7 +88,31 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
               <button type="button" class="pane-icon-button" data-close aria-label="Return ${escapeHtml(pane.title)} to workspace" title="Return to workspace">X</button>
               <button type="button" class="pane-icon-button" data-lock aria-label="Lock ${escapeHtml(pane.title)}" title="Lock">🔓</button>
               <button type="button" class="pane-icon-button" data-pin aria-label="Unpin ${escapeHtml(pane.title)}" title="Unpin">⌖</button>
+              <button type="button" class="pane-icon-button" data-edit aria-label="Edit ${escapeHtml(pane.title)}" title="Edit pane">⋯</button>
             </div>
+            <form class="detached-editor" data-editor hidden aria-label="Detached pane settings">
+              <header>
+                <strong>Edit pane</strong>
+                <button type="button" data-cancel-edit aria-label="Close detached pane editor" title="Close">X</button>
+              </header>
+              <label>
+                <span>Profile</span>
+                <select data-profile></select>
+              </label>
+              <label>
+                <span>Material</span>
+                <select data-material></select>
+              </label>
+              <label>
+                <span>Treatment</span>
+                <select data-treatment></select>
+              </label>
+              <label>
+                <span>Facet orientation</span>
+                <select data-facet-orientation></select>
+              </label>
+              <button type="submit" class="detached-editor-apply">Apply</button>
+            </form>
           </div>
         </div>
       </article>
@@ -69,6 +120,16 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   `
 
   const terminalHost = rootElement.querySelector<HTMLElement>('.detached-terminal')
+  const paneElement = rootElement.querySelector<HTMLElement>('.detached-pane')
+  const titleElement = rootElement.querySelector<HTMLElement>('[data-title]')
+  const subtitleElement = rootElement.querySelector<HTMLElement>('[data-subtitle]')
+  const editor = rootElement.querySelector<HTMLFormElement>('[data-editor]')
+  const profileSelect = rootElement.querySelector<HTMLSelectElement>('[data-profile]')
+  const materialSelect = rootElement.querySelector<HTMLSelectElement>('[data-material]')
+  const treatmentSelect = rootElement.querySelector<HTMLSelectElement>('[data-treatment]')
+  const facetOrientationSelect = rootElement.querySelector<HTMLSelectElement>('[data-facet-orientation]')
+  const configChannel =
+    typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(DETACHED_PANE_CONFIG_CHANNEL)
 
   if (!terminalHost) {
     return
@@ -99,7 +160,7 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   terminal.focus()
 
   const writeEvent = (event: TerminalDataEvent): void => {
-    if (event.ptyId !== pane.ptyId || event.seq <= lastWrittenSeq) {
+    if (event.ptyId !== currentPane.ptyId || event.seq <= lastWrittenSeq) {
       return
     }
 
@@ -109,7 +170,7 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
 
   const flushReplayAndPending = (replayEvents: TerminalDataEvent[]): void => {
     const events = [...replayEvents, ...pendingLiveEvents]
-      .filter((event) => event.ptyId === pane.ptyId)
+      .filter((event) => event.ptyId === currentPane.ptyId)
       .sort((a, b) => a.seq - b.seq)
 
     for (const event of events) {
@@ -121,7 +182,7 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   }
 
   window.terminalApi.onData((event) => {
-    if (event.ptyId !== pane.ptyId) {
+    if (event.ptyId !== currentPane.ptyId) {
       return
     }
 
@@ -134,24 +195,36 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   })
 
   terminal.onData((data) => {
-    window.terminalApi.write({ ptyId: pane.ptyId, data })
+    if (!currentPane.ptyId) {
+      return
+    }
+
+    window.terminalApi.write({ ptyId: currentPane.ptyId, data })
   })
 
   const resize = (): void => {
     fitAddon.fit()
-    window.terminalApi.resize({ ptyId: pane.ptyId, cols: terminal.cols, rows: terminal.rows })
+    if (!currentPane.ptyId) {
+      return
+    }
+
+    window.terminalApi.resize({ ptyId: currentPane.ptyId, cols: terminal.cols, rows: terminal.rows })
   }
 
   new ResizeObserver(resize).observe(terminalHost)
   window.addEventListener('resize', resize)
 
-  window.terminalApi
-    .replayData({ ptyId: pane.ptyId })
-    .then(flushReplayAndPending)
-    .catch(() => flushReplayAndPending([]))
+  if (currentPane.ptyId) {
+    window.terminalApi
+      .replayData({ ptyId: currentPane.ptyId })
+      .then(flushReplayAndPending)
+      .catch(() => flushReplayAndPending([]))
+  } else {
+    flushReplayAndPending([])
+  }
 
   rootElement.querySelector<HTMLButtonElement>('[data-close]')?.addEventListener('click', async () => {
-    await window.terminalApi.closeDetachedWindow({ ptyId: pane.ptyId })
+    await window.terminalApi.closeDetachedWindow({ ptyId: currentPane.ptyId ?? lastKnownPtyId, paneId: currentPane.paneId })
   })
 
   rootElement.querySelector<HTMLButtonElement>('[data-lock]')?.addEventListener('click', async (event) => {
@@ -169,10 +242,206 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
     ;(event.currentTarget as HTMLButtonElement).title = alwaysOnTop ? 'Unpin' : 'Pin'
     await window.terminalApi.updateDetachedWindow({ alwaysOnTop })
   })
+
+  rootElement.querySelector<HTMLButtonElement>('[data-edit]')?.addEventListener('click', () => {
+    if (!editor) {
+      return
+    }
+
+    editor.hidden = !editor.hidden
+    populateEditorControls()
+    configChannel?.postMessage({
+      type: 'detached-pane-config:request',
+      paneId: currentPane.paneId
+    } satisfies DetachedPaneConfigMessage)
+  })
+
+  rootElement.querySelector<HTMLButtonElement>('[data-cancel-edit]')?.addEventListener('click', () => {
+    if (editor) {
+      editor.hidden = true
+    }
+  })
+
+  editor?.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const draft: DetachedPaneAppearanceDraft = {
+      profileId: profileSelect?.value || currentPane.profileId,
+      material: materialSelect?.value ?? currentPane.material,
+      treatment: treatmentSelect?.value ?? currentPane.treatment,
+      facetOrientation: facetOrientationSelect?.value ?? currentPane.facetOrientation
+    }
+    const isProfileChanging = currentPane.profileId !== draft.profileId
+
+    if (isProfileChanging && isActiveDetachedPaneSession(currentPane)) {
+      const confirmed = window.confirm(
+        `Change profile for ${currentPane.title}? This will stop the current terminal session before launching the replacement profile.`
+      )
+
+      if (!confirmed) {
+        return
+      }
+    }
+
+    applySnapshot({
+      ...currentPane,
+      ...draft,
+      material: getAllowedValue(draft.material, MATERIALS, currentPane.material),
+      treatment: getAllowedValue(draft.treatment, TREATMENTS, currentPane.treatment),
+      facetOrientation: getAllowedValue(draft.facetOrientation, FACET_ORIENTATIONS, currentPane.facetOrientation)
+    })
+    configChannel?.postMessage({
+      type: 'detached-pane-config:update',
+      paneId: currentPane.paneId,
+      draft
+    } satisfies DetachedPaneConfigMessage)
+  })
+
+  if (configChannel) {
+    configChannel.onmessage = (event: MessageEvent<DetachedPaneConfigMessage>) => {
+      const message = event.data
+
+      if (message.type === 'detached-pane-config:snapshot' && message.snapshot.paneId === currentPane.paneId) {
+        applySnapshot(message.snapshot)
+        return
+      }
+
+      if (message.type === 'detached-pane-config:result' && message.paneId === currentPane.paneId && !message.ok) {
+        window.alert(message.message ?? 'Could not apply detached pane changes.')
+      }
+    }
+    configChannel.postMessage({
+      type: 'detached-pane-config:request',
+      paneId: currentPane.paneId
+    } satisfies DetachedPaneConfigMessage)
+  }
+
+  function applySnapshot(snapshot: Omit<DetachedPaneConfigSnapshot, 'profiles'> & Partial<Pick<DetachedPaneConfigSnapshot, 'profiles'>>): void {
+    const previousPtyId = currentPane.ptyId
+    currentPane = {
+      ...currentPane,
+      ...snapshot,
+      material: getAllowedValue(snapshot.material, MATERIALS, currentPane.material),
+      treatment: getAllowedValue(snapshot.treatment, TREATMENTS, currentPane.treatment),
+      facetOrientation: getAllowedValue(snapshot.facetOrientation, FACET_ORIENTATIONS, currentPane.facetOrientation),
+      profiles: snapshot.profiles ?? currentPane.profiles
+    }
+    if (currentPane.ptyId) {
+      lastKnownPtyId = currentPane.ptyId
+    }
+
+    updatePaneChrome()
+    populateEditorControls()
+
+    if (!currentPane.ptyId && previousPtyId) {
+      terminal.reset()
+      lastWrittenSeq = 0
+      pendingLiveEvents = []
+      isReplaying = false
+      return
+    }
+
+    if (currentPane.ptyId && currentPane.ptyId !== previousPtyId) {
+      terminal.reset()
+      lastWrittenSeq = 0
+      pendingLiveEvents = []
+      isReplaying = true
+      window.terminalApi
+        .replayData({ ptyId: currentPane.ptyId })
+        .then(flushReplayAndPending)
+        .catch(() => flushReplayAndPending([]))
+      resize()
+    }
+  }
+
+  function updatePaneChrome(): void {
+    if (paneElement) {
+      paneElement.className = `gem-pane detached-pane active material-${currentPane.material} treatment-${currentPane.treatment} orientation-${currentPane.facetOrientation} status-${currentPane.status}`
+      paneElement.dataset.paneStatus = currentPane.status
+    }
+
+    if (titleElement) {
+      titleElement.textContent = currentPane.title
+    }
+
+    if (subtitleElement) {
+      subtitleElement.textContent = currentPane.subtitle
+    }
+  }
+
+  function populateEditorControls(): void {
+    if (profileSelect) {
+      const hasCurrentProfile = currentPane.profiles.some((profile) => profile.id === currentPane.profileId)
+      const profileOptions = currentPane.profiles.map(
+        (profile) =>
+          `<option value="${escapeHtml(profile.id)}"${profile.id === currentPane.profileId ? ' selected' : ''}>${escapeHtml(profile.name)}</option>`
+      )
+
+      profileSelect.innerHTML = [
+        ...(hasCurrentProfile
+          ? []
+          : [`<option value="" selected disabled>${currentPane.profileId ? 'Current profile unavailable' : 'Loading profiles...'}</option>`]),
+        ...profileOptions
+      ].join('')
+    }
+
+    populateSelect(materialSelect, MATERIALS, currentPane.material, formatMaterial)
+    populateSelect(treatmentSelect, TREATMENTS, currentPane.treatment, formatTreatment)
+    populateSelect(facetOrientationSelect, FACET_ORIENTATIONS, currentPane.facetOrientation, formatFacetOrientation)
+  }
 }
 
-function getAllowedValue(value: string | null, allowedValues: string[], fallback: string): string {
-  return value && allowedValues.includes(value) ? value : fallback
+function populateSelect<T extends string>(
+  select: HTMLSelectElement | null,
+  values: readonly T[],
+  selectedValue: T,
+  formatter: (value: T) => string
+): void {
+  if (!select) {
+    return
+  }
+
+  select.innerHTML = values
+    .map(
+      (value) =>
+        `<option value="${escapeHtml(value)}"${value === selectedValue ? ' selected' : ''}>${escapeHtml(formatter(value))}</option>`
+    )
+    .join('')
+}
+
+function getAllowedValue<T extends string>(value: string | null, allowedValues: readonly T[], fallback: T): T {
+  return value && allowedValues.includes(value as T) ? (value as T) : fallback
+}
+
+function formatMaterial(material: GemMaterial): string {
+  return material.charAt(0).toUpperCase() + material.slice(1)
+}
+
+function formatTreatment(treatment: GemTreatment): string {
+  if (treatment === 'sharp') {
+    return 'Sharp slabs'
+  }
+
+  if (treatment === 'polished') {
+    return 'Polished windows'
+  }
+
+  return 'Architectural panes'
+}
+
+function formatFacetOrientation(orientation: FacetOrientation): string {
+  if (orientation === 'left') {
+    return 'Left'
+  }
+
+  if (orientation === 'symmetric') {
+    return 'Symmetric'
+  }
+
+  return 'Right'
+}
+
+function isActiveDetachedPaneSession(pane: Pick<DetachedPaneModel, 'ptyId' | 'status'>): boolean {
+  return Boolean(pane.ptyId) || pane.status === 'running' || pane.status === 'starting'
 }
 
 function escapeHtml(value: string): string {

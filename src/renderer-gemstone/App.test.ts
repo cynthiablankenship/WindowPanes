@@ -120,6 +120,16 @@ describe('gemstone renderer controls', () => {
     expect(source).not.toContain('cloneNode')
   })
 
+  it('bridges detached pane config edits back through the workspace state owner', () => {
+    expect(source).toContain('DETACHED_PANE_CONFIG_CHANNEL')
+    expect(source).toContain("message.type === 'detached-pane-config:request'")
+    expect(source).toContain("message.type !== 'detached-pane-config:update'")
+    expect(source).toContain('const applied = applyPaneProfileAndAppearance')
+    expect(source).toContain('message.paneId,')
+    expect(source).toContain('confirmProfileReplacement: false')
+    expect(source).toContain("status: isProfileChanging ? (profile ? 'assigned' : 'blank') : candidate.status")
+  })
+
   it('provides an opt-in diagnostic overlay and pane effects-disable toggle', () => {
     expect(source).toContain('getInitialGemstoneDiagnosticFlag')
     expect(source).toContain('getInitialPaneEffectsDisabledFlag')

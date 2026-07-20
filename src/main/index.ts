@@ -211,13 +211,13 @@ function emitExit(event: TerminalExitEvent): void {
   }
 }
 
-function broadcastDetachedWindowClosed(ptyId: string): void {
+function broadcastDetachedWindowClosed(ptyId: string | null, paneId?: string): void {
   for (const browserWindow of BrowserWindow.getAllWindows()) {
     if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
       continue;
     }
 
-    browserWindow.webContents.send(IpcChannel.DetachedWindowClosed, { ptyId });
+    browserWindow.webContents.send(IpcChannel.DetachedWindowClosed, { ptyId, paneId });
   }
 }
 
@@ -332,6 +332,7 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
   });
   const hash = new URLSearchParams({
     ptyId: request.ptyId,
+    paneId: request.paneId,
     title: request.title,
     subtitle: request.subtitle ?? '',
     material: request.material ?? 'diamond',
@@ -345,7 +346,7 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
       detachedWindows.delete(request.ptyId);
     }
 
-    broadcastDetachedWindowClosed(request.ptyId);
+    broadcastDetachedWindowClosed(request.ptyId, request.paneId);
   });
 
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -363,10 +364,10 @@ function normalizeDetachedWindowSize(value: number | undefined, fallback: number
 }
 
 function closeDetachedWindow(sender: Electron.WebContents, request: DetachedWindowCloseRequest): void {
-  const detachedWindow = detachedWindows.get(request.ptyId) ?? BrowserWindow.fromWebContents(sender);
+  const detachedWindow = (request.ptyId ? detachedWindows.get(request.ptyId) : undefined) ?? BrowserWindow.fromWebContents(sender);
 
   if (!detachedWindow || detachedWindow.isDestroyed()) {
-    broadcastDetachedWindowClosed(request.ptyId);
+    broadcastDetachedWindowClosed(request.ptyId ?? null, request.paneId);
     return;
   }
 

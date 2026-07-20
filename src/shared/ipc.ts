@@ -93,6 +93,7 @@ export interface CommandAvailabilityRequest {
 }
 
 export interface DetachPaneRequest {
+  paneId: string
   ptyId: string
   title: string
   subtitle?: string
@@ -109,7 +110,8 @@ export interface DetachedWindowUpdateRequest {
 }
 
 export interface DetachedWindowCloseRequest {
-  ptyId: string
+  ptyId?: string | null
+  paneId?: string
 }
 
 // --- Terminal: event payloads (main -> renderer) -----------------------------
@@ -130,7 +132,8 @@ export interface TerminalExitEvent {
 }
 
 export interface DetachedWindowClosedEvent {
-  ptyId: string
+  ptyId: string | null
+  paneId?: string
 }
 
 /** Unsubscribe handle returned by event subscriptions. */

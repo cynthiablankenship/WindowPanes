@@ -28,3 +28,16 @@ describe('detached pane glass', () => {
     expect(source).toMatch(/html,\s*body,\s*#root\s*{[^}]*background:\s*transparent !important;/s)
   })
 })
+
+describe('detached pane editor', () => {
+  it('renders a detached appearance editor that can submit profile and style changes', () => {
+    expect(rendererSource).toContain('DETACHED_PANE_CONFIG_CHANNEL')
+    expect(rendererSource).toContain('data-edit')
+    expect(rendererSource).toContain('detached-editor')
+    expect(rendererSource).toContain("type: 'detached-pane-config:update'")
+  })
+
+  it('keeps the detached editor usable without becoming a drag region', () => {
+    expect(source).toMatch(/\.detached-workspace \.detached-editor[\s\S]*-webkit-app-region:\s*no-drag;/)
+  })
+})

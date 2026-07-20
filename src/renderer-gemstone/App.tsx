@@ -11,12 +11,14 @@ import {
 import {
   BUILT_IN_PROFILES,
   DEFAULT_PERSISTED_STATE,
+  DETACHED_PANE_CONFIG_CHANNEL,
   MANUAL_INSTALL_MESSAGE,
   confirmSetupInstallExecution,
   getInstallCommandForPlatform,
   isSetupManagedBuiltInProfile,
   type CommandAvailabilityResult,
   type CommandProfile,
+  type DetachedPaneConfigMessage,
   type PaneStatus,
   type StorageApi,
   type TerminalExitEvent
@@ -117,6 +119,10 @@ interface NewPaneDraft {
   facetOrientation: FacetOrientation
 }
 
+interface ApplyPaneProfileOptions {
+  confirmProfileReplacement?: boolean
+}
+
 interface PointerInteraction {
   pointerId: number
   paneId: string
@@ -148,8 +154,10 @@ const DEFAULT_NEW_PANE_DRAFT: NewPaneDraft = {
 export function GemstoneApp(): JSX.Element {
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const paneMenuRef = useRef<HTMLDivElement | null>(null)
+  const detachedConfigChannelRef = useRef<BroadcastChannel | null>(null)
   const interactionRef = useRef<PointerInteraction | null>(null)
   const panesRef = useRef<GemPaneState[]>([])
+  const availableProfilesRef = useRef<CommandProfile[]>([])
   const storageStateRef = useRef<PersistedStateWithGemstoneWorkspace>(DEFAULT_PERSISTED_STATE)
   const [canvasSize, setCanvasSize] = useState<CanvasSize>(DEFAULT_CANVAS_SIZE)
   const [customProfiles, setCustomProfiles] = useState<CommandProfile[]>([])
@@ -222,6 +230,63 @@ export function GemstoneApp(): JSX.Element {
   useEffect(() => {
     panesRef.current = panes
   }, [panes])
+
+  useEffect(() => {
+    availableProfilesRef.current = availableProfiles
+  }, [availableProfiles])
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') {
+      return
+    }
+
+    const channel = new BroadcastChannel(DETACHED_PANE_CONFIG_CHANNEL)
+    detachedConfigChannelRef.current = channel
+
+    channel.onmessage = (event: MessageEvent<DetachedPaneConfigMessage>) => {
+      const message = event.data
+
+      if (message.type === 'detached-pane-config:request') {
+        publishDetachedPaneConfig(message.paneId)
+        return
+      }
+
+      if (message.type !== 'detached-pane-config:update') {
+        return
+      }
+
+      const applied = applyPaneProfileAndAppearance(
+        message.paneId,
+        {
+          profileId: message.draft.profileId ?? '',
+          material: message.draft.material as GemMaterial,
+          treatment: message.draft.treatment as GemTreatment,
+          facetOrientation: message.draft.facetOrientation as FacetOrientation
+        },
+        { confirmProfileReplacement: false }
+      )
+
+      channel.postMessage({
+        type: 'detached-pane-config:result',
+        paneId: message.paneId,
+        ok: applied,
+        message: applied ? undefined : 'Could not apply detached pane changes.'
+      } satisfies DetachedPaneConfigMessage)
+    }
+
+    return () => {
+      detachedConfigChannelRef.current = null
+      channel.close()
+    }
+  }, [activeProfileById])
+
+  useEffect(() => {
+    for (const pane of panes) {
+      if (pane.hidden) {
+        publishDetachedPaneConfig(pane.id)
+      }
+    }
+  }, [panes, availableProfiles])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -475,7 +540,9 @@ export function GemstoneApp(): JSX.Element {
 
   useEffect(() => {
     return window.terminalApi.onDetachedWindowClosed((event) => {
-      const pane = panesRef.current.find((candidate) => candidate.ptyId === event.ptyId)
+      const pane = panesRef.current.find((candidate) =>
+        event.paneId ? candidate.id === event.paneId : candidate.ptyId === event.ptyId
+      )
 
       if (!pane) {
         return
@@ -1007,7 +1074,38 @@ export function GemstoneApp(): JSX.Element {
     })
   }
 
-  function applyPaneProfileAndAppearance(paneId: string, draft: NewPaneDraft): boolean {
+  function publishDetachedPaneConfig(paneId: string): void {
+    const channel = detachedConfigChannelRef.current
+    const pane = panesRef.current.find((candidate) => candidate.id === paneId)
+
+    if (!channel || !pane) {
+      return
+    }
+
+    const profile = pane.profileId ? availableProfilesRef.current.find((candidate) => candidate.id === pane.profileId) : undefined
+
+    channel.postMessage({
+      type: 'detached-pane-config:snapshot',
+      snapshot: {
+        paneId: pane.id,
+        ptyId: pane.ptyId,
+        title: pane.title,
+        subtitle: profile ? formatCommand(profile) : 'Detached desktop pane',
+        profileId: pane.profileId,
+        material: pane.material,
+        treatment: pane.treatment,
+        facetOrientation: pane.facetOrientation,
+        status: pane.status,
+        profiles: availableProfilesRef.current
+      }
+    } satisfies DetachedPaneConfigMessage)
+  }
+
+  function applyPaneProfileAndAppearance(
+    paneId: string,
+    draft: NewPaneDraft,
+    options: ApplyPaneProfileOptions = {}
+  ): boolean {
     const pane = panesRef.current.find((candidate) => candidate.id === paneId)
     const profileId = draft.profileId || null
     const profile = profileId ? activeProfileById.get(profileId) : null
@@ -1018,7 +1116,11 @@ export function GemstoneApp(): JSX.Element {
 
     const isProfileChanging = pane.profileId !== profileId
     const isReplacingActiveProfile = isProfileChanging && hasActiveGemPaneSession(pane)
-    const confirmation = isReplacingActiveProfile ? getProfileReplacementConfirmation(pane, draft.material) : null
+    const shouldConfirmProfileReplacement = options.confirmProfileReplacement !== false
+    const confirmation =
+      isReplacingActiveProfile && shouldConfirmProfileReplacement
+        ? getProfileReplacementConfirmation(pane, draft.material)
+        : null
 
     if (confirmation && !window.confirm(confirmation)) {
       return false
@@ -1043,7 +1145,7 @@ export function GemstoneApp(): JSX.Element {
           material: draft.material,
           treatment: draft.treatment,
           facetOrientation: draft.facetOrientation,
-          status: profile ? 'assigned' : 'blank',
+          status: isProfileChanging ? (profile ? 'assigned' : 'blank') : candidate.status,
           ptyId: isReplacingActiveProfile ? null : candidate.ptyId,
           launchedProfileId: isReplacingActiveProfile ? undefined : candidate.launchedProfileId,
           errorMessage: undefined
@@ -1242,6 +1344,7 @@ export function GemstoneApp(): JSX.Element {
 
     try {
       await window.terminalApi.detachPane({
+        paneId: pane.id,
         ptyId: pane.ptyId,
         title: pane.title,
         subtitle: profile ? formatCommand(profile) : 'Detached desktop pane',
