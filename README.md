@@ -9,7 +9,7 @@ WindowPanes gives Claude Code, Codex CLI, Droid, OpenCode, Reasonix, Pi, Hermes,
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f855a.svg)](LICENSE)
 [![Built with Electron](https://img.shields.io/badge/built%20with-Electron-47848f.svg)](https://www.electronjs.org/)
 
-![WindowPanes Gemstone workspace with Codex CLI, Claude Code, OpenCode, Droid, and a shell pane](docs/screenshots/windowpanes-gemstone-workspace.png)
+![WindowPanes Gemstone workspace with Codex CLI, Claude Code, OpenCode, Droid, and a shell pane](docs/screenshots/windowpanes-gemstone-hero.png)
 
 ## Why WindowPanes?
 
