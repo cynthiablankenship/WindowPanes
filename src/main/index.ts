@@ -12,6 +12,7 @@ import {
   isSetupManagedBuiltInProfile,
   type CommandAvailabilityRequest,
   type DetachedWindowCloseRequest,
+  type DetachedWindowReadyRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
   type KillRequest,
@@ -52,7 +53,9 @@ interface ResolvedCommand {
 
 const ptys = new Map<string, PtyRecord>();
 const detachedWindows = new Map<string, BrowserWindow>();
+const detachedReadyWaiters = new Set<(event: Electron.IpcMainInvokeEvent, request: DetachedWindowReadyRequest) => void>();
 const PTY_REPLAY_BUFFER_LIMIT = 200;
+const DETACHED_READY_TIMEOUT_MS = 5000;
 const APP_NAME = 'WindowPanes';
 const LEGACY_USER_DATA_DIRNAME = 'ai-terminal-workspace';
 const WINDOWS_APP_USER_MODEL_ID = 'com.windowpanes.app';
@@ -297,7 +300,7 @@ function spawnSetupPty(request: SetupSpawnRequest): SpawnResult {
   });
 }
 
-function createDetachedPaneWindow(request: DetachPaneRequest): void {
+async function createDetachedPaneWindow(request: DetachPaneRequest): Promise<void> {
   const record = ptys.get(request.ptyId);
 
   if (!record) {
@@ -322,6 +325,7 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
     transparent: true,
     hasShadow: true,
     alwaysOnTop: true,
+    show: false,
     backgroundColor: '#00000000',
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
@@ -341,6 +345,8 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
   }).toString();
 
   detachedWindows.set(request.ptyId, detachedWindow);
+  const readyPromise = waitForDetachedWindowReady(detachedWindow, request);
+
   detachedWindow.on('closed', () => {
     if (detachedWindows.get(request.ptyId) === detachedWindow) {
       detachedWindows.delete(request.ptyId);
@@ -349,14 +355,29 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
     broadcastDetachedWindowClosed(request.ptyId, request.paneId);
   });
 
-  if (process.env.ELECTRON_RENDERER_URL) {
-    const url = new URL('detached.html', ensureTrailingSlash(process.env.ELECTRON_RENDERER_URL));
-    url.hash = hash;
-    void detachedWindow.loadURL(url.toString());
-    return;
-  }
+  try {
+    if (process.env.ELECTRON_RENDERER_URL) {
+      const url = new URL('detached.html', ensureTrailingSlash(process.env.ELECTRON_RENDERER_URL));
+      url.hash = hash;
+      await detachedWindow.loadURL(url.toString());
+    } else {
+      await detachedWindow.loadFile(join(__dirname, '../renderer/detached.html'), { hash });
+    }
 
-  void detachedWindow.loadFile(join(__dirname, '../renderer/detached.html'), { hash });
+    await readyPromise;
+
+    if (!detachedWindow.isDestroyed()) {
+      detachedWindow.show();
+      detachedWindow.focus();
+    }
+  } catch (error) {
+    if (!detachedWindow.isDestroyed()) {
+      detachedWindow.close();
+    }
+
+    await readyPromise.catch(() => undefined);
+    throw error;
+  }
 }
 
 function normalizeDetachedWindowSize(value: number | undefined, fallback: number): number {
@@ -372,6 +393,45 @@ function closeDetachedWindow(sender: Electron.WebContents, request: DetachedWind
   }
 
   detachedWindow.close();
+}
+
+function waitForDetachedWindowReady(detachedWindow: BrowserWindow, request: DetachPaneRequest): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      if (!detachedWindow.isDestroyed()) {
+        detachedWindow.close();
+      }
+      reject(new Error('Detached pane failed to finish loading.'));
+    }, DETACHED_READY_TIMEOUT_MS);
+
+    const handleReady = (event: Electron.IpcMainInvokeEvent, readyRequest: DetachedWindowReadyRequest): void => {
+      if (
+        event.sender !== detachedWindow.webContents ||
+        readyRequest.ptyId !== request.ptyId ||
+        readyRequest.paneId !== request.paneId
+      ) {
+        return;
+      }
+
+      cleanup();
+      resolve();
+    };
+
+    const handleClosed = (): void => {
+      cleanup();
+      reject(new Error('Detached pane closed before it finished loading.'));
+    };
+
+    const cleanup = (): void => {
+      clearTimeout(timeout);
+      detachedReadyWaiters.delete(handleReady);
+      detachedWindow.off('closed', handleClosed);
+    };
+
+    detachedReadyWaiters.add(handleReady);
+    detachedWindow.once('closed', handleClosed);
+  });
 }
 
 function updateDetachedWindow(sender: Electron.WebContents, request: DetachedWindowUpdateRequest): void {
@@ -660,7 +720,15 @@ function registerIpc(): void {
   });
 
   ipcMain.handle(IpcChannel.TerminalDetachPane, (_event, request: DetachPaneRequest) => {
-    createDetachedPaneWindow(request);
+    return createDetachedPaneWindow(request);
+  });
+
+  ipcMain.handle(IpcChannel.DetachedWindowReady, (event, request: DetachedWindowReadyRequest) => {
+    for (const waiter of [...detachedReadyWaiters]) {
+      waiter(event, request);
+    }
+
+    return undefined;
   });
 
   ipcMain.handle(IpcChannel.DetachedWindowUpdate, (event, request: DetachedWindowUpdateRequest) => {

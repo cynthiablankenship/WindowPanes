@@ -158,6 +158,10 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   terminal.open(terminalHost)
   fitAddon.fit()
   terminal.focus()
+  void window.terminalApi.notifyDetachedWindowReady({
+    ptyId: currentPane.ptyId ?? lastKnownPtyId,
+    paneId: currentPane.paneId
+  })
 
   const writeEvent = (event: TerminalDataEvent): void => {
     if (event.ptyId !== currentPane.ptyId || event.seq <= lastWrittenSeq) {

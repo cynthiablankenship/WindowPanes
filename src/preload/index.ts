@@ -3,6 +3,7 @@ import {
   IpcChannel,
   type DetachedWindowCloseRequest,
   type DetachedWindowClosedEvent,
+  type DetachedWindowReadyRequest,
   type CommandAvailabilityRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
@@ -37,6 +38,8 @@ const terminalApi: TerminalApi = {
   restart: (request: RestartRequest) => ipcRenderer.invoke(IpcChannel.TerminalRestart, request),
   replayData: (request: ReplayDataRequest) => ipcRenderer.invoke(IpcChannel.TerminalReplayData, request),
   detachPane: (request: DetachPaneRequest) => ipcRenderer.invoke(IpcChannel.TerminalDetachPane, request),
+  notifyDetachedWindowReady: (request: DetachedWindowReadyRequest) =>
+    ipcRenderer.invoke(IpcChannel.DetachedWindowReady, request),
   updateDetachedWindow: (request: DetachedWindowUpdateRequest) =>
     ipcRenderer.invoke(IpcChannel.DetachedWindowUpdate, request),
   closeDetachedWindow: (request: DetachedWindowCloseRequest) =>
