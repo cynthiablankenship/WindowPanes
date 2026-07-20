@@ -28,6 +28,8 @@ export const IpcChannel = {
   TerminalCheckCommand: 'terminal:check-command',
   TerminalSpawnSetup: 'terminal:spawn-setup',
   TerminalReplayData: 'terminal:replay-data',
+  TerminalDetachPane: 'terminal:detach-pane',
+  DetachedWindowUpdate: 'detached-window:update',
   StorageLoad: 'storage:load',
   StorageSave: 'storage:save',
   // main -> renderer (push events)
@@ -88,6 +90,16 @@ export interface CommandAvailabilityRequest {
   profile: CommandProfile
 }
 
+export interface DetachPaneRequest {
+  ptyId: string
+  title: string
+}
+
+export interface DetachedWindowUpdateRequest {
+  locked?: boolean
+  alwaysOnTop?: boolean
+}
+
 // --- Terminal: event payloads (main -> renderer) -----------------------------
 
 export interface TerminalDataEvent {
@@ -122,6 +134,8 @@ export interface TerminalApi {
   kill(req: KillRequest): void
   restart(req: RestartRequest): Promise<SpawnResult>
   replayData(req: ReplayDataRequest): Promise<TerminalDataEvent[]>
+  detachPane(req: DetachPaneRequest): Promise<void>
+  updateDetachedWindow(req: DetachedWindowUpdateRequest): Promise<void>
   onData(listener: (event: TerminalDataEvent) => void): Unsubscribe
   onExit(listener: (event: TerminalExitEvent) => void): Unsubscribe
 }

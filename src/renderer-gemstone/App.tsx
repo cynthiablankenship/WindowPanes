@@ -1219,6 +1219,27 @@ export function GemstoneApp(): JSX.Element {
     setPanes((current) => markGemPaneSessionStopped(current, paneId))
   }
 
+  async function detachPane(paneId: string): Promise<void> {
+    const pane = panesRef.current.find((candidate) => candidate.id === paneId)
+
+    if (!pane?.ptyId) {
+      return
+    }
+
+    try {
+      await window.terminalApi.detachPane({
+        ptyId: pane.ptyId,
+        title: pane.title
+      })
+    } catch (error: unknown) {
+      updatePane(paneId, (current) => ({
+        ...current,
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : String(error)
+      }))
+    }
+  }
+
   function startAll(): void {
     for (const pane of panesRef.current) {
       if (!pane.hidden && pane.profileId && pane.status !== 'running' && pane.status !== 'starting') {
@@ -1531,6 +1552,21 @@ export function GemstoneApp(): JSX.Element {
                         }}
                       >
                         ↻
+                      </button>
+                    ) : null}
+                    {pane.ptyId ? (
+                      <button
+                        aria-label={`Detach ${pane.title}`}
+                        className="pane-icon-button"
+                        data-pane-control="true"
+                        title={`Detach ${pane.title}`}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          void detachPane(pane.id)
+                        }}
+                      >
+                        ⧉
                       </button>
                     ) : null}
                     <button

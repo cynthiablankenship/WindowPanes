@@ -11,6 +11,8 @@ import {
   getInstallCommandForPlatform,
   isSetupManagedBuiltInProfile,
   type CommandAvailabilityRequest,
+  type DetachedWindowUpdateRequest,
+  type DetachPaneRequest,
   type KillRequest,
   type PersistedState,
   type ReplayDataRequest,
@@ -187,23 +189,27 @@ function resolveCommand(profile: CommandProfile): ResolvedCommand {
   };
 }
 
-function emitData(browserWindow: BrowserWindow, event: TerminalDataEvent): void {
-  if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
-    return;
-  }
+function emitData(event: TerminalDataEvent): void {
+  for (const browserWindow of BrowserWindow.getAllWindows()) {
+    if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
+      continue;
+    }
 
-  browserWindow.webContents.send(IpcChannel.TerminalData, event);
+    browserWindow.webContents.send(IpcChannel.TerminalData, event);
+  }
 }
 
-function emitExit(browserWindow: BrowserWindow, event: TerminalExitEvent): void {
-  if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
-    return;
-  }
+function emitExit(event: TerminalExitEvent): void {
+  for (const browserWindow of BrowserWindow.getAllWindows()) {
+    if (browserWindow.isDestroyed() || browserWindow.webContents.isDestroyed()) {
+      continue;
+    }
 
-  browserWindow.webContents.send(IpcChannel.TerminalExit, event);
+    browserWindow.webContents.send(IpcChannel.TerminalExit, event);
+  }
 }
 
-function spawnPty(browserWindow: BrowserWindow, request: SpawnRequest): SpawnResult {
+function spawnPty(request: SpawnRequest): SpawnResult {
   const profile = normalizeCommandProfileForPlatform(request.profile, process.platform);
   const resolved = resolveCommand(profile);
   const ptyId = randomUUID();
@@ -241,12 +247,12 @@ function spawnPty(browserWindow: BrowserWindow, request: SpawnRequest): SpawnRes
         record.outputBuffer.splice(0, record.outputBuffer.length - PTY_REPLAY_BUFFER_LIMIT);
       }
 
-      emitData(browserWindow, event);
+      emitData(event);
     });
 
     child.onExit(({ exitCode, signal }) => {
       ptys.delete(ptyId);
-      emitExit(browserWindow, {
+      emitExit({
         ptyId,
         exitCode,
         signal: typeof signal === 'number' ? signal : null
@@ -262,7 +268,7 @@ function spawnPty(browserWindow: BrowserWindow, request: SpawnRequest): SpawnRes
   }
 }
 
-function spawnSetupPty(browserWindow: BrowserWindow, request: SetupSpawnRequest): SpawnResult {
+function spawnSetupPty(request: SetupSpawnRequest): SpawnResult {
   if (!isSetupManagedBuiltInProfile(request.profile)) {
     throw new Error('Setup commands are only available for built-in profiles with setup metadata.');
   }
@@ -273,10 +279,67 @@ function spawnSetupPty(browserWindow: BrowserWindow, request: SetupSpawnRequest)
     throw new Error('No verified setup command is configured for this profile on this operating system.');
   }
 
-  return spawnPty(browserWindow, {
+  return spawnPty({
     ...request,
     profile: createSetupCommandProfile(request.profile, installCommand.command)
   });
+}
+
+function createDetachedPaneWindow(request: DetachPaneRequest): void {
+  const record = ptys.get(request.ptyId);
+
+  if (!record) {
+    throw new Error('Cannot detach pane: terminal session is not running.');
+  }
+
+  const detachedWindow = new BrowserWindow({
+    title: request.title,
+    width: Math.max(640, record.cols * 8),
+    height: Math.max(420, record.rows * 18 + 56),
+    minWidth: 420,
+    minHeight: 260,
+    frame: false,
+    transparent: true,
+    hasShadow: true,
+    alwaysOnTop: true,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  });
+  const hash = new URLSearchParams({
+    ptyId: request.ptyId,
+    title: request.title
+  }).toString();
+
+  if (process.env.ELECTRON_RENDERER_URL) {
+    const url = new URL('detached.html', ensureTrailingSlash(process.env.ELECTRON_RENDERER_URL));
+    url.hash = hash;
+    void detachedWindow.loadURL(url.toString());
+    return;
+  }
+
+  void detachedWindow.loadFile(join(__dirname, '../renderer/detached.html'), { hash });
+}
+
+function updateDetachedWindow(sender: Electron.WebContents, request: DetachedWindowUpdateRequest): void {
+  const detachedWindow = BrowserWindow.fromWebContents(sender);
+
+  if (!detachedWindow) {
+    return;
+  }
+
+  if (typeof request.locked === 'boolean') {
+    detachedWindow.setMovable(!request.locked);
+    detachedWindow.setResizable(!request.locked);
+  }
+
+  if (typeof request.alwaysOnTop === 'boolean') {
+    detachedWindow.setAlwaysOnTop(request.alwaysOnTop);
+  }
 }
 
 function createSetupCommandProfile(profile: CommandProfile, installCommand: string): CommandProfile {
@@ -457,16 +520,6 @@ function getLaunchErrorCode(error: unknown): string | undefined {
   return typeof code === 'string' || typeof code === 'number' ? String(code) : undefined;
 }
 
-function windowFromSender(sender: Electron.WebContents): BrowserWindow {
-  const browserWindow = BrowserWindow.fromWebContents(sender);
-
-  if (!browserWindow) {
-    throw new Error('Terminal request did not come from an application window.');
-  }
-
-  return browserWindow;
-}
-
 function killPty(ptyId: string): void {
   const record = ptys.get(ptyId);
 
@@ -514,12 +567,12 @@ function saveState(state: PersistedState): void {
 }
 
 function registerIpc(): void {
-  ipcMain.handle(IpcChannel.TerminalSpawn, (event, request: SpawnRequest) => {
-    return spawnPty(windowFromSender(event.sender), request);
+  ipcMain.handle(IpcChannel.TerminalSpawn, (_event, request: SpawnRequest) => {
+    return spawnPty(request);
   });
 
-  ipcMain.handle(IpcChannel.TerminalSpawnSetup, (event, request: SetupSpawnRequest) => {
-    return spawnSetupPty(windowFromSender(event.sender), request);
+  ipcMain.handle(IpcChannel.TerminalSpawnSetup, (_event, request: SetupSpawnRequest) => {
+    return spawnSetupPty(request);
   });
 
   ipcMain.handle(IpcChannel.TerminalCheckCommand, (_event, request: CommandAvailabilityRequest) => {
@@ -557,7 +610,15 @@ function registerIpc(): void {
     return [...(ptys.get(request.ptyId)?.outputBuffer ?? [])];
   });
 
-  ipcMain.handle(IpcChannel.TerminalRestart, (event, request: RestartRequest) => {
+  ipcMain.handle(IpcChannel.TerminalDetachPane, (_event, request: DetachPaneRequest) => {
+    createDetachedPaneWindow(request);
+  });
+
+  ipcMain.handle(IpcChannel.DetachedWindowUpdate, (event, request: DetachedWindowUpdateRequest) => {
+    updateDetachedWindow(event.sender, request);
+  });
+
+  ipcMain.handle(IpcChannel.TerminalRestart, (_event, request: RestartRequest) => {
     const existing = ptys.get(request.ptyId);
 
     if (!existing) {
@@ -572,7 +633,7 @@ function registerIpc(): void {
     };
 
     killPty(request.ptyId);
-    return spawnPty(windowFromSender(event.sender), spawnRequest);
+    return spawnPty(spawnRequest);
   });
 
   ipcMain.handle(IpcChannel.StorageLoad, () => loadState());

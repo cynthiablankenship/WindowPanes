@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   IpcChannel,
   type CommandAvailabilityRequest,
+  type DetachedWindowUpdateRequest,
+  type DetachPaneRequest,
   type KillRequest,
   type PersistedState,
   type ReplayDataRequest,
@@ -32,6 +34,9 @@ const terminalApi: TerminalApi = {
   },
   restart: (request: RestartRequest) => ipcRenderer.invoke(IpcChannel.TerminalRestart, request),
   replayData: (request: ReplayDataRequest) => ipcRenderer.invoke(IpcChannel.TerminalReplayData, request),
+  detachPane: (request: DetachPaneRequest) => ipcRenderer.invoke(IpcChannel.TerminalDetachPane, request),
+  updateDetachedWindow: (request: DetachedWindowUpdateRequest) =>
+    ipcRenderer.invoke(IpcChannel.DetachedWindowUpdate, request),
   onData: (callback: (event: TerminalDataEvent) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: TerminalDataEvent): void => {
       callback(payload);

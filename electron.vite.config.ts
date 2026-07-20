@@ -27,7 +27,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'index.html'),
-          gemstone: resolve(__dirname, 'gemstone.html')
+          gemstone: resolve(__dirname, 'gemstone.html'),
+          detached: resolve(__dirname, 'detached.html')
         }
       }
     }
