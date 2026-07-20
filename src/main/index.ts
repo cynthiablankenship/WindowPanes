@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, extname, isAbsolute, join, resolve } from 'node:path';
 import * as pty from 'node-pty';
 import {
@@ -53,6 +53,20 @@ const APP_NAME = 'WindowPanes';
 const LEGACY_USER_DATA_DIRNAME = 'ai-terminal-workspace';
 const WINDOWS_APP_USER_MODEL_ID = 'com.windowpanes.app';
 const ICON_FILENAMES = process.platform === 'win32' ? ['icon.ico', 'icon.png'] : ['icon.png', 'icon.ico'];
+const MACOS_FALLBACK_PATH_ENTRIES = [
+  '.local/bin',
+  '.codex/bin',
+  '.npm-global/bin',
+  'Library/pnpm',
+  '/opt/homebrew/bin',
+  '/opt/homebrew/sbin',
+  '/usr/local/bin',
+  '/usr/local/sbin',
+  '/usr/bin',
+  '/bin',
+  '/usr/sbin',
+  '/sbin'
+];
 
 function resolveAppIconPath(): string | undefined {
   const assetRoots = [
@@ -121,10 +135,19 @@ function normalizedEnv(profileEnv?: Record<string, string>): Record<string, stri
     }
   }
 
-  return {
+  const mergedEnv = {
     ...env,
     ...profileEnv
   };
+
+  if (process.platform === 'darwin') {
+    mergedEnv.PATH = mergePathEntries([
+      ...getPathEntries(mergedEnv),
+      ...getMacOsCliPathEntries(app.getPath('home'))
+    ]);
+  }
+
+  return mergedEnv;
 }
 
 function resolveShellCommand(): { command: string; args: string[] } {
@@ -350,6 +373,38 @@ function getPathEntries(env: Record<string, string>): string[] {
   const pathValue = getEnvironmentValue(env, 'PATH');
 
   return pathValue ? pathValue.split(delimiter).filter(Boolean) : [];
+}
+
+function getMacOsCliPathEntries(homeDir: string): string[] {
+  const userAndSystemEntries = MACOS_FALLBACK_PATH_ENTRIES.map((entry) =>
+    entry.startsWith('/') ? entry : join(homeDir, entry)
+  );
+
+  return [...userAndSystemEntries, ...readMacOsSystemPathEntries()];
+}
+
+function readMacOsSystemPathEntries(): string[] {
+  const entries: string[] = [];
+
+  try {
+    entries.push(...readFileSync('/etc/paths', 'utf8').split('\n'));
+  } catch {
+    // /etc/paths is present on normal macOS installs; fallback entries above cover minimal environments.
+  }
+
+  try {
+    for (const fileName of readdirSync('/etc/paths.d')) {
+      entries.push(...readFileSync(join('/etc/paths.d', fileName), 'utf8').split('\n'));
+    }
+  } catch {
+    // Some stripped-down macOS environments do not have /etc/paths.d.
+  }
+
+  return entries.map((entry) => entry.trim()).filter(Boolean);
+}
+
+function mergePathEntries(entries: string[]): string {
+  return [...new Set(entries.filter(Boolean))].join(delimiter);
 }
 
 function getPathExtEntries(env: Record<string, string>): string[] {

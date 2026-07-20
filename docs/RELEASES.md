@@ -49,10 +49,10 @@ It uploads the NSIS installer:
 dist/WindowPanes-Setup-*.exe
 ```
 
-For version `0.2.5`, the expected installer name is:
+For version `0.2.6`, the expected installer name is:
 
 ```text
-WindowPanes-Setup-0.2.5.exe
+WindowPanes-Setup-0.2.6.exe
 ```
 
 The Linux release job runs on `ubuntu-latest`, installs Linux packaging dependencies, then runs:
@@ -70,10 +70,10 @@ It uploads the AppImage:
 dist/*.AppImage
 ```
 
-For version `0.2.5`, the expected AppImage name is:
+For version `0.2.6`, the expected AppImage name is:
 
 ```text
-WindowPanes-0.2.5-x86_64.AppImage
+WindowPanes-0.2.6-x86_64.AppImage
 ```
 
 After the packaging jobs finish, the publish job creates or updates the GitHub Release for the pushed tag using the built-in `GITHUB_TOKEN`. The macOS DMG, Windows installer, and Linux AppImage are attached to the GitHub Release. They are also available as workflow artifacts from the release run.
@@ -101,7 +101,7 @@ npm run build
 Create and push a release tag from `main`:
 
 ```bash
-git tag windowpanes-v0.2.5
+git tag windowpanes-v0.2.6
 git push origin main --tags
 ```
 
