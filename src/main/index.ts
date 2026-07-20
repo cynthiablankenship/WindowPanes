@@ -314,8 +314,8 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
 
   const detachedWindow = new BrowserWindow({
     title: request.title,
-    width: Math.max(640, record.cols * 8),
-    height: Math.max(420, record.rows * 18 + 56),
+    width: normalizeDetachedWindowSize(request.width, Math.max(640, record.cols * 8)),
+    height: normalizeDetachedWindowSize(request.height, Math.max(420, record.rows * 18 + 56)),
     minWidth: 420,
     minHeight: 260,
     frame: false,
@@ -356,6 +356,10 @@ function createDetachedPaneWindow(request: DetachPaneRequest): void {
   }
 
   void detachedWindow.loadFile(join(__dirname, '../renderer/detached.html'), { hash });
+}
+
+function normalizeDetachedWindowSize(value: number | undefined, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.max(360, Math.round(value)) : fallback;
 }
 
 function closeDetachedWindow(sender: Electron.WebContents, request: DetachedWindowCloseRequest): void {

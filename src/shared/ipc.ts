@@ -99,6 +99,8 @@ export interface DetachPaneRequest {
   material?: string
   treatment?: string
   facetOrientation?: string
+  width?: number
+  height?: number
 }
 
 export interface DetachedWindowUpdateRequest {

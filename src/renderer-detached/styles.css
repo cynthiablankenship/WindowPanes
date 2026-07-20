@@ -13,13 +13,18 @@ body,
   background: transparent;
 }
 
+body {
+  -webkit-app-region: drag;
+}
+
 .detached-workspace {
   width: 100vw;
   height: 100vh;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: transparent;
+  background: transparent !important;
+  perspective: 1400px;
 }
 
 .detached-workspace::before,
@@ -29,9 +34,9 @@ body,
 
 .detached-workspace .detached-pane {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 8px;
+  width: calc(100vw - 16px);
+  height: calc(100vh - 16px);
   min-width: 0;
   min-height: 0;
   transform: none;
@@ -43,6 +48,10 @@ body,
 
 .detached-workspace .gem-shadow {
   inset: 40px 26px -16px 28px;
+}
+
+.detached-workspace .gemstone-frame {
+  background: var(--material-fill);
 }
 
 .detached-titlebar {
@@ -64,6 +73,13 @@ body,
   top: 36px;
   right: 64px;
   pointer-events: auto;
+}
+
+.detached-workspace .terminal-core,
+.detached-workspace .terminal-surface,
+.detached-workspace .xterm,
+.detached-workspace button {
+  -webkit-app-region: no-drag;
 }
 
 .detached-workspace .pane-icon-button {

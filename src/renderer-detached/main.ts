@@ -38,7 +38,7 @@ interface DetachedPaneModel {
 
 function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): void {
   rootElement.innerHTML = `
-    <main class="gemstone-workspace detached-workspace" data-background="icy-glass-surface">
+    <main class="gemstone-workspace detached-workspace">
       <article class="gem-pane detached-pane active material-${pane.material} treatment-${pane.treatment} orientation-${pane.facetOrientation} status-running" data-pane-visible="true" data-pane-selected="true" data-pane-locked="false" data-pane-status="running" style="--pane-x: 0px; --pane-y: 0px;">
         <div class="gem-shadow" aria-hidden="true"></div>
         <div class="gemstone-frame">

@@ -1247,7 +1247,9 @@ export function GemstoneApp(): JSX.Element {
         subtitle: profile ? formatCommand(profile) : 'Detached desktop pane',
         material: pane.material,
         treatment: pane.treatment,
-        facetOrientation: pane.facetOrientation
+        facetOrientation: pane.facetOrientation,
+        width: pane.bounds.width,
+        height: pane.bounds.height
       })
       setPanes((current) => setGemPaneHidden(current, paneId, true))
       setSelectedPaneId(getNextVisiblePaneId(panesRef.current, paneId))
