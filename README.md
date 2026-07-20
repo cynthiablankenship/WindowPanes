@@ -1,28 +1,79 @@
 # WindowPanes
 
-WindowPanes is a local desktop terminal workspace for hosting AI coding CLIs and regular shells in multiple saved panes.
+**A local desktop command center for AI coding CLIs.**
 
-Current supported packaging platforms: **Windows**, first-pass **Linux AppImage**, and first-pass **macOS**.
+WindowPanes gives Claude Code, Codex CLI, Droid, OpenCode, Reasonix, Pi, Hermes, OpenClaw, and ordinary shells their own movable terminal panes. Arrange your agents, keep their sessions visible, save layouts, and run everything locally without handing WindowPanes your provider credentials.
 
-## Setup on Windows
+[![Release](https://img.shields.io/github/v/release/cynthiablankenship/WindowPanes?label=release)](https://github.com/cynthiablankenship/WindowPanes/releases/latest)
+[![CI](https://github.com/cynthiablankenship/WindowPanes/actions/workflows/ci.yml/badge.svg)](https://github.com/cynthiablankenship/WindowPanes/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2f855a.svg)](LICENSE)
+[![Built with Electron](https://img.shields.io/badge/built%20with-Electron-47848f.svg)](https://www.electronjs.org/)
+
+![WindowPanes Gemstone workspace preview](docs/screenshots/windowpanes-gemstone-preview.svg)
+
+## Why WindowPanes?
+
+AI coding tools are powerful, but juggling them across scattered terminal windows gets messy fast. WindowPanes keeps the work local and visible:
+
+- **One workspace for many agents**: launch different CLIs side by side instead of hunting through separate terminal windows.
+- **Local-first by design**: WindowPanes starts local commands through `node-pty`; provider login, API keys, sandboxing, and behavior stay inside each CLI.
+- **Saved pane layouts**: arrange, resize, overlap, hide, restore, and reopen workspaces without rebuilding your desk every time.
+- **Built-in setup flow**: missing CLIs can be selected from the app and installed through explicit, visible terminal commands.
+- **Custom profiles**: add any local command, script, shell, REPL, or project tool as its own pane.
+
+## Supported Profiles
+
+WindowPanes ships with built-in profiles for:
+
+| Profile | Command |
+| --- | --- |
+| Claude Code | `claude` |
+| Codex CLI | `codex` |
+| Factory Droid | `droid` |
+| OpenCode | `opencode` |
+| Reasonix | `reasonix` |
+| Pi | `pi` |
+| Hermes | `hermes` |
+| OpenClaw | `openclaw` |
+| Generic Shell | your system shell |
+
+You can also create custom profiles for any command on your machine.
+
+## Download
+
+Grab the latest build from [GitHub Releases](https://github.com/cynthiablankenship/WindowPanes/releases/latest).
+
+Current packaging targets:
+
+- **macOS**: unsigned Apple silicon DMG
+- **Windows**: NSIS installer
+- **Linux**: first-pass AppImage
+
+macOS builds are currently unsigned. If macOS blocks the first launch, open **System Settings** -> **Privacy & Security** and approve WindowPanes, or right-click the app and choose **Open**.
+
+## Philosophy
+
+WindowPanes is a terminal host, not an agent harness. It does not proxy provider APIs, collect credentials, inject prompts, hide arguments, auto-send text, add hidden tools, or log terminal transcripts by default. Each provider CLI remains responsible for its own authentication and behavior.
+
+## Development Setup
 
 Prerequisites:
 
 - Node.js 22 or newer
 - npm 10 or newer
-- Windows build tools capable of compiling native Node modules. Install the Visual Studio Build Tools C++ workload if `node-pty` fails to compile.
+- Native build tools capable of compiling Node modules. On Windows, install the Visual Studio Build Tools C++ workload if `node-pty` fails to compile.
 
 Install dependencies:
 
-```powershell
+```bash
 npm install
 ```
 
-## Commands
+## Development Commands
 
 Run the desktop app during development:
 
-```powershell
+```bash
 npm run dev
 ```
 
@@ -60,11 +111,13 @@ The gemstone package keeps the stable renderer source intact, but swaps the pack
 
 Type-check, test, and build:
 
-```powershell
+```bash
 npm run typecheck
 npm test
 npm run build
 ```
+
+## Packaging
 
 Create the unpacked Gemstone Windows app folder for local testing:
 
