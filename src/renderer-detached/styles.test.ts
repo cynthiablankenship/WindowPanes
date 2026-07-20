@@ -18,14 +18,20 @@ describe('detached pane window regions', () => {
 })
 
 describe('detached pane glass', () => {
-  it('uses a desktop-glass fill instead of the workspace material fill', () => {
+  it('uses the normal clipped material fill for detached panes', () => {
     expect(source).toMatch(
-      /\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--detached-material-fill\);/s
+      /\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--material-fill\);/s
     )
+    expect(source).not.toContain('--detached-material-fill')
+    expect(source).not.toContain('backdrop-filter: blur')
   })
 
   it('keeps the detached window root transparent around the clipped pane', () => {
     expect(source).toMatch(/html,\s*body,\s*#root\s*{[^}]*background:\s*transparent !important;/s)
+  })
+
+  it('hides the offset pane shadow in detached windows so it does not outline the transparent shape', () => {
+    expect(source).toMatch(/\.detached-workspace \.gem-shadow\s*{[^}]*display:\s*none;/s)
   })
 })
 
