@@ -28,13 +28,13 @@ wsl -d Ubuntu-24.04 -- bash -lc "rm -rf ~/src/WindowPanes && git clone /mnt/c/pa
 Build inside WSL:
 
 ```powershell
-wsl -d Ubuntu-24.04 -- bash -lc "cd ~/src/WindowPanes && npm ci && npm run typecheck && npm test && npm run dist:linux"
+wsl -d Ubuntu-24.04 -- bash -lc "cd ~/src/WindowPanes && npm ci && npm run typecheck && npm test && npm run dist:linux:gemstone"
 ```
 
 Copy the AppImage back to the Windows `dist` folder:
 
 ```powershell
-wsl -d Ubuntu-24.04 -- bash -lc "cp ~/src/WindowPanes/dist/WindowPanes-0.2.1-x86_64.AppImage /mnt/c/path/to/WindowPanes/dist/"
+wsl -d Ubuntu-24.04 -- bash -lc "cp ~/src/WindowPanes/dist/WindowPanes-0.2.2-x86_64.AppImage /mnt/c/path/to/WindowPanes/dist/"
 ```
 
 Verify the artifact from Windows:
@@ -46,7 +46,7 @@ Get-ChildItem .\dist | Select-Object Name,Length,LastWriteTime
 Expected AppImage path after copying back:
 
 ```text
-C:\path\to\WindowPanes\dist\WindowPanes-0.2.1-x86_64.AppImage
+C:\path\to\WindowPanes\dist\WindowPanes-0.2.2-x86_64.AppImage
 ```
 
 ## Validation Notes

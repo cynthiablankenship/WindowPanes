@@ -34,10 +34,12 @@ npm run dev:gemstone
 
 The stable app loads `src/renderer/`. The gemstone lab loads `src/renderer-gemstone/` through the separate `gemstone.html` entry and does not replace the production renderer.
 
-Build the experimental gemstone renderer as the default packaged macOS app:
+Build the gemstone renderer as the default packaged app:
 
 ```bash
+npm run package:win:gemstone
 npm run package:mac:gemstone
+npm run package:linux:gemstone
 ```
 
 This writes the unpacked gemstone app to:
@@ -46,10 +48,12 @@ This writes the unpacked gemstone app to:
 dist/mac-arm64/WindowPanes.app
 ```
 
-Create a local unsigned gemstone DMG:
+Create local gemstone installers:
 
 ```bash
+npm run dist:win:gemstone
 npm run dist:mac:gemstone
+npm run dist:linux:gemstone
 ```
 
 The gemstone package keeps the stable renderer source intact, but swaps the packaged default HTML entry to `gemstone.html` after the normal build. Public distribution should add Apple Developer signing and notarization before release.
@@ -62,10 +66,10 @@ npm test
 npm run build
 ```
 
-Create the unpacked Windows app folder for local testing:
+Create the unpacked Gemstone Windows app folder for local testing:
 
 ```powershell
-npm run package:win
+npm run package:win:gemstone
 ```
 
 This command runs the Electron/Vite build first, then writes the unpacked Windows app to:
@@ -74,46 +78,46 @@ This command runs the Electron/Vite build first, then writes the unpacked Window
 dist/win-unpacked/WindowPanes.exe
 ```
 
-Create the Windows installer:
+Create the Gemstone Windows installer:
 
 ```powershell
-npm run dist:win
+npm run dist:win:gemstone
 ```
 
 This command runs the Electron/Vite build first, then writes the NSIS installer to:
 
 ```text
-dist/WindowPanes-Setup-0.2.1.exe
+dist/WindowPanes-Setup-0.2.2.exe
 ```
 
-Create the unpacked stable macOS app folder for local testing:
+Create the unpacked Gemstone macOS app folder for local testing:
 
 ```bash
-npm run package:mac
+npm run package:mac:gemstone
 ```
 
-This command runs the Electron/Vite build first, then writes the unpacked stable macOS app to:
+This command runs the Electron/Vite build first, then writes the unpacked Gemstone macOS app to:
 
 ```text
 dist/mac-arm64/WindowPanes.app
 ```
 
-Create the stable macOS disk image:
+Create the Gemstone macOS disk image:
 
 ```bash
-npm run dist:mac
+npm run dist:mac:gemstone
 ```
 
 This command runs the Electron/Vite build first, then writes a local unsigned DMG to:
 
 ```text
-dist/WindowPanes-0.2.1-arm64.dmg
+dist/WindowPanes-0.2.2-arm64.dmg
 ```
 
-Create the unpacked Linux app folder for local testing:
+Create the unpacked Gemstone Linux app folder for local testing:
 
 ```powershell
-npm run package:linux
+npm run package:linux:gemstone
 ```
 
 This command runs the Electron/Vite build first, then writes the unpacked Linux app to:
@@ -122,30 +126,30 @@ This command runs the Electron/Vite build first, then writes the unpacked Linux 
 dist/linux-unpacked/WindowPanes
 ```
 
-Create the Linux AppImage:
+Create the Gemstone Linux AppImage:
 
 ```powershell
-npm run dist:linux
+npm run dist:linux:gemstone
 ```
 
 This command runs the Electron/Vite build first, then writes the AppImage to:
 
 ```text
-dist/WindowPanes-0.2.1-x86_64.AppImage
+dist/WindowPanes-0.2.2-x86_64.AppImage
 ```
 
 On Linux, make the AppImage executable and run it:
 
 ```bash
-chmod +x dist/WindowPanes-0.2.1-x86_64.AppImage
-./dist/WindowPanes-0.2.1-x86_64.AppImage
+chmod +x dist/WindowPanes-0.2.2-x86_64.AppImage
+./dist/WindowPanes-0.2.2-x86_64.AppImage
 ```
 
 Linux packaging should ideally be validated on Linux before release because WindowPanes uses the native `node-pty` dependency.
 
 For the maintained WSL Ubuntu 24.04 AppImage build workflow, including the exact Windows PowerShell commands and Linux GUI validation notes, see [docs/WSL_LINUX_APPIMAGE.md](docs/WSL_LINUX_APPIMAGE.md).
 
-GitHub Actions validates pushes and pull requests to `master` on Windows and Linux. Tagged releases matching `windowpanes-v*` build and publish the Windows installer and Linux AppImage. For CI behavior, release workflow behavior, and the exact release tagging commands, see [docs/RELEASES.md](docs/RELEASES.md).
+GitHub Actions validates pushes and pull requests to `main` on macOS, Windows, and Linux. Tagged releases matching `windowpanes-v*` build and publish Gemstone installers for macOS, Windows, and Linux. For CI behavior, release workflow behavior, and the exact release tagging commands, see [docs/RELEASES.md](docs/RELEASES.md).
 
 Remove generated build and packaging output:
 
@@ -162,12 +166,11 @@ Use this checklist before tagging or sharing a local v0.2 build:
 - [ ] Run `npm run dev` and confirm the development app opens.
 - [ ] Run `npm run dev:gemstone` and confirm the gemstone lab opens.
 - [ ] On macOS, run `npm run package:mac:gemstone` and launch `dist/mac-arm64/WindowPanes.app`.
-- [ ] On macOS, run `npm run dist:mac:gemstone` and confirm `dist/WindowPanes-0.2.1-arm64.dmg` is created.
-- [ ] On macOS, run `npm run package:mac` and launch the stable `dist/mac-arm64/WindowPanes.app`.
-- [ ] Run `npm run package:win` and launch `dist/win-unpacked/WindowPanes.exe`.
-- [ ] Run `npm run dist:win` and confirm `dist/WindowPanes-Setup-0.2.1.exe` is created.
-- [ ] On Linux, run `npm run package:linux` and launch `dist/linux-unpacked/WindowPanes`.
-- [ ] On Linux, run `npm run dist:linux`, then `chmod +x dist/WindowPanes-0.2.1-x86_64.AppImage` and launch the AppImage.
+- [ ] On macOS, run `npm run dist:mac:gemstone` and confirm `dist/WindowPanes-0.2.2-arm64.dmg` is created.
+- [ ] Run `npm run package:win:gemstone` and launch `dist/win-unpacked/WindowPanes.exe`.
+- [ ] Run `npm run dist:win:gemstone` and confirm `dist/WindowPanes-Setup-0.2.2.exe` is created.
+- [ ] On Linux, run `npm run package:linux:gemstone` and launch `dist/linux-unpacked/WindowPanes`.
+- [ ] On Linux, run `npm run dist:linux:gemstone`, then `chmod +x dist/WindowPanes-0.2.2-x86_64.AppImage` and launch the AppImage.
 - [ ] Install from the installer build and open WindowPanes.
 - [ ] Confirm the app name is WindowPanes and the app/window icon is shown.
 - [ ] Launch the **Generic Shell** profile.
@@ -255,8 +258,8 @@ This app is a terminal host, not an agent harness. It launches local commands in
    npm run typecheck
    npm test
    npm run build
-   npm run package:win
-   npm run dist:win
-   npm run package:linux
-   npm run dist:linux
+   npm run package:win:gemstone
+   npm run dist:win:gemstone
+   npm run package:linux:gemstone
+   npm run dist:linux:gemstone
    ```

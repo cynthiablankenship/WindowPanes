@@ -1,6 +1,6 @@
 # WindowPanes CI and Release Automation
 
-WindowPanes uses GitHub Actions for pull-request validation, master branch validation, and tagged release builds. The workflows use GitHub-hosted runners and do not require repository secrets.
+WindowPanes uses GitHub Actions for pull-request validation, main branch validation, and tagged release builds. The workflows use GitHub-hosted runners and do not require repository secrets.
 
 ## CI Workflow
 
@@ -9,11 +9,11 @@ The CI workflow lives at `.github/workflows/ci.yml`.
 It runs on:
 
 ```text
-push to master
-pull_request to master
+push to main
+pull_request to main
 ```
 
-Each run validates the app on both `windows-latest` and `ubuntu-latest` with:
+Each run validates the app on `macos-latest`, `windows-latest`, and `ubuntu-latest` with:
 
 ```bash
 npm ci
@@ -40,7 +40,7 @@ The Windows release job runs on `windows-latest`:
 npm ci
 npm run typecheck
 npm test
-npm run dist:win
+npm run dist:win:gemstone
 ```
 
 It uploads the NSIS installer:
@@ -49,10 +49,10 @@ It uploads the NSIS installer:
 dist/WindowPanes-Setup-*.exe
 ```
 
-For version `0.2.1`, the expected installer name is:
+For version `0.2.2`, the expected installer name is:
 
 ```text
-WindowPanes-Setup-0.2.1.exe
+WindowPanes-Setup-0.2.2.exe
 ```
 
 The Linux release job runs on `ubuntu-latest`, installs Linux packaging dependencies, then runs:
@@ -61,7 +61,7 @@ The Linux release job runs on `ubuntu-latest`, installs Linux packaging dependen
 npm ci
 npm run typecheck
 npm test
-npm run dist:linux
+npm run dist:linux:gemstone
 ```
 
 It uploads the AppImage:
@@ -70,13 +70,13 @@ It uploads the AppImage:
 dist/*.AppImage
 ```
 
-For version `0.2.1`, the expected AppImage name is:
+For version `0.2.2`, the expected AppImage name is:
 
 ```text
-WindowPanes-0.2.1-x86_64.AppImage
+WindowPanes-0.2.2-x86_64.AppImage
 ```
 
-After both packaging jobs finish, the publish job creates or updates the GitHub Release for the pushed tag using the built-in `GITHUB_TOKEN`. The Windows installer and Linux AppImage are attached to the GitHub Release. They are also available as workflow artifacts from the release run.
+After the packaging jobs finish, the publish job creates or updates the GitHub Release for the pushed tag using the built-in `GITHUB_TOKEN`. The macOS DMG, Windows installer, and Linux AppImage are attached to the GitHub Release. They are also available as workflow artifacts from the release run.
 
 Signing and notarization are not part of this pass. Windows SmartScreen/code signing should be handled as future release hardening work.
 
@@ -84,7 +84,7 @@ The Linux AppImage is built automatically in GitHub Actions, but visual validati
 
 ## Cutting a Release
 
-Before cutting a release, make sure `master` is clean and includes the changes you want to release.
+Before cutting a release, make sure `main` is clean and includes the changes you want to release.
 
 ```bash
 git status
@@ -98,11 +98,11 @@ npm test
 npm run build
 ```
 
-Create and push a release tag from `master`:
+Create and push a release tag from `main`:
 
 ```bash
-git tag windowpanes-v0.2.1
-git push origin master --tags
+git tag windowpanes-v0.2.2
+git push origin main --tags
 ```
 
 Pushing the tag starts the release workflow. When the workflow completes, release artifacts appear under the GitHub Release for that tag and in the workflow run artifacts.

@@ -66,7 +66,7 @@ jobs:
         run: npm test
 
       - name: Build Windows installer
-        run: npm run dist:win -- --publish never
+        run: npm run dist:win:gemstone -- --publish never
 
       - name: Upload Windows installer artifact
         uses: actions/upload-artifact@v4
@@ -106,7 +106,7 @@ jobs:
         run: npm test
 
       - name: Build Linux AppImage
-        run: npm run dist:linux -- --publish never
+        run: npm run dist:linux:gemstone -- --publish never
 
       - name: Upload Linux AppImage artifact
         uses: actions/upload-artifact@v4
