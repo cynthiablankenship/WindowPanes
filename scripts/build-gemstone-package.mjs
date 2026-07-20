@@ -3,8 +3,9 @@ import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 
 const root = join(import.meta.dirname, '..')
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
-await run('npm', ['run', 'build'])
+await run(npmCommand, ['run', 'build'])
 await copyFile(join(root, 'out', 'renderer', 'gemstone.html'), join(root, 'out', 'renderer', 'index.html'))
 
 function run(command, args) {
