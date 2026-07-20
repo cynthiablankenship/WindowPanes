@@ -33,6 +33,7 @@ body {
 }
 
 .detached-workspace .detached-pane {
+  --detached-material-tint: rgba(184, 232, 255, 0.16);
   position: fixed;
   inset: 8px;
   width: calc(100vw - 16px);
@@ -46,12 +47,42 @@ body {
   transform: none;
 }
 
+.detached-workspace .material-amethyst {
+  --detached-material-tint: rgba(102, 43, 160, 0.24);
+}
+
+.detached-workspace .material-onyx {
+  --detached-material-tint: rgba(5, 8, 12, 0.42);
+}
+
+.detached-workspace .material-opal {
+  --detached-material-tint: rgba(189, 239, 226, 0.18);
+}
+
+.detached-workspace .material-cobalt {
+  --detached-material-tint: rgba(8, 39, 91, 0.24);
+}
+
+.detached-workspace .material-emerald {
+  --detached-material-tint: rgba(14, 82, 57, 0.24);
+}
+
+.detached-workspace .material-ruby {
+  --detached-material-tint: rgba(104, 18, 35, 0.24);
+}
+
 .detached-workspace .gem-shadow {
   inset: 40px 26px -16px 28px;
 }
 
 .detached-workspace .gemstone-frame {
-  background: var(--material-fill);
+  --detached-material-fill:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.28), transparent 38%, rgba(151, 215, 255, 0.14)),
+    radial-gradient(circle at var(--material-highlight-position), rgba(255, 255, 255, 0.48), transparent 17%),
+    var(--detached-material-tint);
+  background: var(--detached-material-fill);
+  backdrop-filter: blur(18px) saturate(1.18);
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
 }
 
 .detached-titlebar {

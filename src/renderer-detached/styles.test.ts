@@ -16,3 +16,11 @@ describe('detached pane window regions', () => {
     expect(rendererSource).toContain("document.body.classList.toggle('detached-locked', locked)")
   })
 })
+
+describe('detached pane glass', () => {
+  it('uses a desktop-glass fill instead of the workspace material fill', () => {
+    expect(source).toMatch(
+      /\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--detached-material-fill\);/s
+    )
+  })
+})
