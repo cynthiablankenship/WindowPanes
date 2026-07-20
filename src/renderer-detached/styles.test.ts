@@ -23,4 +23,8 @@ describe('detached pane glass', () => {
       /\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--detached-material-fill\);/s
     )
   })
+
+  it('keeps the detached window root transparent around the clipped pane', () => {
+    expect(source).toMatch(/html,\s*body,\s*#root\s*{[^}]*background:\s*transparent !important;/s)
+  })
 })
