@@ -374,6 +374,36 @@ select {
   opacity: var(--gemstone-background-intensity, 0.82);
 }
 
+.pane-snap-guides {
+  position: absolute;
+  inset: 0;
+  z-index: 28;
+  pointer-events: none;
+}
+
+.pane-snap-guide {
+  position: absolute;
+  display: block;
+  background: rgba(129, 232, 255, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.34),
+    0 0 18px rgba(91, 221, 255, 0.7);
+}
+
+.pane-snap-guide.vertical {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-1px);
+}
+
+.pane-snap-guide.horizontal {
+  right: 0;
+  left: 0;
+  height: 2px;
+  transform: translateY(-1px);
+}
+
 .gem-pane {
   position: absolute;
   top: 0;

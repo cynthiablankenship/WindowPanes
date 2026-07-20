@@ -162,7 +162,8 @@ describe('gemstone renderer controls', () => {
     const beginInteraction = sourceBlock('function beginInteraction', 'function togglePaneLock')
 
     expect(interactionEffect).toContain('interaction.pointerId !== event.pointerId')
-    expect(interactionEffect).toContain('applyGemPaneBoundsInteraction')
+    expect(interactionEffect).toContain('getGemPaneBoundsInteractionResult')
+    expect(interactionEffect).toContain('setSnapGuides(result.snapGuides)')
     expect(interactionEffect).toContain("window.addEventListener('pointerup', handlePointerUp)")
     expect(interactionEffect).toContain("window.addEventListener('pointercancel', handlePointerCancel)")
     expect(interactionEffect).toContain("window.addEventListener('lostpointercapture', handlePointerCancel, true)")
@@ -171,6 +172,7 @@ describe('gemstone renderer controls', () => {
     expect(interactionEffect).toContain('releaseInteractionCapture(interaction)')
     expect(interactionEffect).toContain('interactionRef.current = null')
     expect(interactionEffect).toContain('setDraggingPaneId(null)')
+    expect(interactionEffect).toContain('setSnapGuides([])')
     expect(beginInteraction).toContain('captureTarget: event.currentTarget')
     expect(beginInteraction).toContain('setDraggingPaneId(pane.id)')
   })

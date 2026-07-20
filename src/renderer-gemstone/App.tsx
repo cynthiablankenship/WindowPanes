@@ -54,11 +54,11 @@ import {
   type PersistedStateWithGemstoneWorkspace
 } from './domain/gemstoneState'
 import {
-  applyGemPaneBoundsInteraction,
   bringAllGemPanesOnscreen,
   bringGemPaneToFront,
   clearStoppedGemPanes,
   flipGemPaneFacetOrientation,
+  getGemPaneBoundsInteractionResult,
   getPtyIdsToStopForLoadedLayout,
   hasActiveGemPaneSession,
   markGemPaneSessionStarted,
@@ -72,7 +72,8 @@ import {
   setGemPaneMaterial,
   setGemPaneTreatment,
   toggleGemPaneLock,
-  unlockAllGemPanes
+  unlockAllGemPanes,
+  type PaneSnapGuide
 } from './domain/paneOperations'
 import {
   getPaneIconRules,
@@ -182,6 +183,7 @@ export function GemstoneApp(): JSX.Element {
   const [isDiagnosticsEnabled, setIsDiagnosticsEnabled] = useState(() => getInitialGemstoneDiagnosticFlag())
   const [arePaneEffectsDisabled, setArePaneEffectsDisabled] = useState(() => getInitialPaneEffectsDisabledFlag())
   const [draggingPaneId, setDraggingPaneId] = useState<string | null>(null)
+  const [snapGuides, setSnapGuides] = useState<PaneSnapGuide[]>([])
 
   const availableProfiles = useMemo(() => getAvailableCommandProfiles(customProfiles), [customProfiles])
   const visiblePanes = useMemo(() => getRenderableGemPanes(panes), [panes])
@@ -597,8 +599,8 @@ export function GemstoneApp(): JSX.Element {
       const deltaX = event.clientX - interaction.startX
       const deltaY = event.clientY - interaction.startY
 
-      setPanes((current) =>
-        applyGemPaneBoundsInteraction(
+      setPanes((current) => {
+        const result = getGemPaneBoundsInteractionResult(
           current,
           interaction.paneId,
           interaction.mode,
@@ -607,7 +609,9 @@ export function GemstoneApp(): JSX.Element {
           deltaY,
           canvasSize
         )
-      )
+        setSnapGuides(result.snapGuides)
+        return result.panes
+      })
     }
 
     const handlePointerUp = (event: PointerEvent): void => {
@@ -653,6 +657,7 @@ export function GemstoneApp(): JSX.Element {
     releaseInteractionCapture(interaction)
     interactionRef.current = null
     setDraggingPaneId(null)
+    setSnapGuides([])
   }
 
   function releaseInteractionCapture(interaction: PointerInteraction): void {
@@ -1496,6 +1501,21 @@ export function GemstoneApp(): JSX.Element {
     >
       <section className="gemstone-canvas" ref={canvasRef} aria-label="Live gemstone terminal workspace">
         <div className="gemstone-atmosphere" aria-hidden="true" />
+        {snapGuides.length > 0 ? (
+          <div className="pane-snap-guides" aria-hidden="true">
+            {snapGuides.map((guide, index) => (
+              <span
+                className={`pane-snap-guide ${guide.orientation}`}
+                key={`${guide.orientation}-${guide.position}-${index}`}
+                style={
+                  guide.orientation === 'vertical'
+                    ? { left: `${guide.position}px` }
+                    : { top: `${guide.position}px` }
+                }
+              />
+            ))}
+          </div>
+        ) : null}
         {isDiagnosticsEnabled ? (
           <div className="gem-diagnostics-panel" data-pane-control="true">
             <strong>Gemstone diagnostics</strong>

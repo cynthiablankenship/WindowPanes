@@ -12,6 +12,7 @@ import {
   bringGemPaneToFront,
   clearStoppedGemPanes,
   flipGemPaneFacetOrientation,
+  getGemPaneBoundsInteractionResult,
   getPtyIdsToStopForLoadedLayout,
   markGemPaneSessionStarting,
   markGemPaneSessionStarted,
@@ -339,6 +340,83 @@ describe('gemstone pane operations', () => {
       width: 420,
       height: 300
     })
+  })
+
+  it('snaps a dragged pane edge to a nearby visible pane edge', () => {
+    const target = createPane({ id: 'target', bounds: { x: 80, y: 80, width: 360, height: 280 } })
+    const anchor = createPane({ id: 'anchor', bounds: { x: 500, y: 100, width: 420, height: 300 }, zIndex: 2 })
+
+    const result = getGemPaneBoundsInteractionResult(
+      [target, anchor],
+      'target',
+      'drag',
+      target.bounds,
+      62,
+      20,
+      { width: 1200, height: 800 }
+    )
+
+    expect(result.panes.find((pane) => pane.id === 'target')?.bounds).toEqual({
+      x: 140,
+      y: 100,
+      width: 360,
+      height: 280
+    })
+    expect(result.snapGuides).toEqual([
+      { orientation: 'vertical', position: 500 },
+      { orientation: 'horizontal', position: 100 }
+    ])
+  })
+
+  it('snaps only the active resize edge to nearby pane geometry', () => {
+    const target = createPane({ id: 'target', bounds: { x: 80, y: 80, width: 360, height: 280 } })
+    const anchor = createPane({ id: 'anchor', bounds: { x: 520, y: 80, width: 420, height: 300 }, zIndex: 2 })
+
+    const result = getGemPaneBoundsInteractionResult(
+      [target, anchor],
+      'target',
+      'e',
+      target.bounds,
+      84,
+      0,
+      { width: 1200, height: 800 }
+    )
+
+    expect(result.panes.find((pane) => pane.id === 'target')?.bounds).toEqual({
+      x: 80,
+      y: 80,
+      width: 440,
+      height: 280
+    })
+    expect(result.snapGuides).toEqual([{ orientation: 'vertical', position: 520 }])
+  })
+
+  it('does not snap to hidden panes', () => {
+    const target = createPane({ id: 'target', bounds: { x: 80, y: 80, width: 360, height: 280 } })
+    const hidden = createPane({
+      id: 'hidden',
+      bounds: { x: 500, y: 100, width: 420, height: 300 },
+      hidden: true,
+      zIndex: 2
+    })
+
+    const result = getGemPaneBoundsInteractionResult(
+      [target, hidden],
+      'target',
+      'drag',
+      target.bounds,
+      62,
+      20,
+      { width: 1200, height: 800 }
+    )
+
+    expect(result.panes.find((pane) => pane.id === 'target')?.bounds).toEqual({
+      x: 142,
+      y: 100,
+      width: 360,
+      height: 280
+    })
+    expect(result.snapGuides).toEqual([])
   })
 
   it('marks hidden panes in state without removing or duplicating their model', () => {

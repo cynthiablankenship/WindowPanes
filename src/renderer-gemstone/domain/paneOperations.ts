@@ -9,6 +9,21 @@ import {
 } from './geometry'
 import type { FacetOrientation, GemMaterial, GemPaneState, GemTreatment } from './gemstoneState'
 
+export interface PaneSnapGuide {
+  orientation: 'vertical' | 'horizontal'
+  position: number
+}
+
+export interface PaneBoundsInteractionResult {
+  panes: GemPaneState[]
+  snapGuides: PaneSnapGuide[]
+}
+
+interface PaneSnapResult {
+  bounds: PixelBounds
+  guides: PaneSnapGuide[]
+}
+
 export type ProfileAssignmentResult =
   | {
       outcome: 'assigned'
@@ -100,15 +115,193 @@ export function applyGemPaneBoundsInteraction(
   deltaY: number,
   canvasSize: CanvasSize
 ): GemPaneState[] {
-  return updateGemPane(panes, paneId, (pane) => ({
-    ...pane,
-    bounds:
-      mode === 'drag'
-        ? movePaneBounds(startBounds, deltaX, deltaY, canvasSize)
-        : resizePaneBounds(startBounds, deltaX, deltaY, mode, canvasSize),
-    maximized: false,
-    restoreBounds: undefined
-  }))
+  return getGemPaneBoundsInteractionResult(panes, paneId, mode, startBounds, deltaX, deltaY, canvasSize).panes
+}
+
+export function getGemPaneBoundsInteractionResult(
+  panes: readonly GemPaneState[],
+  paneId: string,
+  mode: 'drag' | ResizeHandle,
+  startBounds: PixelBounds,
+  deltaX: number,
+  deltaY: number,
+  canvasSize: CanvasSize
+): PaneBoundsInteractionResult {
+  const rawBounds =
+    mode === 'drag'
+      ? movePaneBounds(startBounds, deltaX, deltaY, canvasSize)
+      : resizePaneBounds(startBounds, deltaX, deltaY, mode, canvasSize)
+  const snapResult = snapPaneBounds(rawBounds, panes, paneId, mode, canvasSize)
+
+  return {
+    panes: updateGemPane(panes, paneId, (pane) => ({
+      ...pane,
+      bounds: snapResult.bounds,
+      maximized: false,
+      restoreBounds: undefined
+    })),
+    snapGuides: snapResult.guides
+  }
+}
+
+function snapPaneBounds(
+  bounds: PixelBounds,
+  panes: readonly GemPaneState[],
+  paneId: string,
+  mode: 'drag' | ResizeHandle,
+  canvasSize: CanvasSize
+): PaneSnapResult {
+  const SNAP_DISTANCE_PX = 18
+  const candidates = createSnapCandidates(panes, paneId, canvasSize)
+  const nextBounds = { ...bounds }
+  const guides: PaneSnapGuide[] = []
+  const verticalSnap = getBestAxisSnap(
+    createHorizontalSnapSources(nextBounds, mode),
+    candidates.vertical,
+    SNAP_DISTANCE_PX
+  )
+  const horizontalSnap = getBestAxisSnap(
+    createVerticalSnapSources(nextBounds, mode),
+    candidates.horizontal,
+    SNAP_DISTANCE_PX
+  )
+
+  if (verticalSnap) {
+    applyHorizontalSnap(nextBounds, verticalSnap.source, verticalSnap.delta, mode)
+    guides.push({ orientation: 'vertical', position: verticalSnap.target })
+  }
+
+  if (horizontalSnap) {
+    applyVerticalSnap(nextBounds, horizontalSnap.source, horizontalSnap.delta, mode)
+    guides.push({ orientation: 'horizontal', position: horizontalSnap.target })
+  }
+
+  return {
+    bounds: nextBounds,
+    guides
+  }
+}
+
+function createSnapCandidates(
+  panes: readonly GemPaneState[],
+  paneId: string,
+  canvasSize: CanvasSize
+): { vertical: number[]; horizontal: number[] } {
+  const visiblePanes = panes.filter((pane) => pane.id !== paneId && pane.hidden !== true)
+  const vertical = [0, canvasSize.width / 2, canvasSize.width]
+  const horizontal = [0, canvasSize.height / 2, canvasSize.height]
+
+  for (const pane of visiblePanes) {
+    vertical.push(pane.bounds.x, pane.bounds.x + pane.bounds.width / 2, pane.bounds.x + pane.bounds.width)
+    horizontal.push(pane.bounds.y, pane.bounds.y + pane.bounds.height / 2, pane.bounds.y + pane.bounds.height)
+  }
+
+  return { vertical, horizontal }
+}
+
+function createHorizontalSnapSources(bounds: PixelBounds, mode: 'drag' | ResizeHandle): SnapSource[] {
+  if (mode === 'drag') {
+    return [
+      { edge: 'left', value: bounds.x },
+      { edge: 'centerX', value: bounds.x + bounds.width / 2 },
+      { edge: 'right', value: bounds.x + bounds.width }
+    ]
+  }
+
+  return [
+    ...(mode.includes('w') ? [{ edge: 'left' as const, value: bounds.x }] : []),
+    ...(mode.includes('e') ? [{ edge: 'right' as const, value: bounds.x + bounds.width }] : [])
+  ]
+}
+
+function createVerticalSnapSources(bounds: PixelBounds, mode: 'drag' | ResizeHandle): SnapSource[] {
+  if (mode === 'drag') {
+    return [
+      { edge: 'top', value: bounds.y },
+      { edge: 'centerY', value: bounds.y + bounds.height / 2 },
+      { edge: 'bottom', value: bounds.y + bounds.height }
+    ]
+  }
+
+  return [
+    ...(mode.includes('n') ? [{ edge: 'top' as const, value: bounds.y }] : []),
+    ...(mode.includes('s') ? [{ edge: 'bottom' as const, value: bounds.y + bounds.height }] : [])
+  ]
+}
+
+type SnapSourceEdge = 'left' | 'right' | 'centerX' | 'top' | 'bottom' | 'centerY'
+
+interface SnapSource {
+  edge: SnapSourceEdge
+  value: number
+}
+
+function getBestAxisSnap(
+  sources: readonly SnapSource[],
+  targets: readonly number[],
+  snapDistance: number
+): { source: SnapSourceEdge; target: number; delta: number } | null {
+  let bestSnap: { source: SnapSourceEdge; target: number; delta: number } | null = null
+
+  for (const source of sources) {
+    for (const target of targets) {
+      const delta = target - source.value
+
+      if (Math.abs(delta) > snapDistance) {
+        continue
+      }
+
+      if (!bestSnap || Math.abs(delta) < Math.abs(bestSnap.delta)) {
+        bestSnap = { source: source.edge, target, delta }
+      }
+    }
+  }
+
+  return bestSnap
+}
+
+function applyHorizontalSnap(
+  bounds: PixelBounds,
+  source: SnapSourceEdge,
+  delta: number,
+  mode: 'drag' | ResizeHandle
+): void {
+  if (mode === 'drag' || source === 'centerX') {
+    bounds.x += delta
+    return
+  }
+
+  if (source === 'left') {
+    bounds.x += delta
+    bounds.width -= delta
+    return
+  }
+
+  if (source === 'right') {
+    bounds.width += delta
+  }
+}
+
+function applyVerticalSnap(
+  bounds: PixelBounds,
+  source: SnapSourceEdge,
+  delta: number,
+  mode: 'drag' | ResizeHandle
+): void {
+  if (mode === 'drag' || source === 'centerY') {
+    bounds.y += delta
+    return
+  }
+
+  if (source === 'top') {
+    bounds.y += delta
+    bounds.height -= delta
+    return
+  }
+
+  if (source === 'bottom') {
+    bounds.height += delta
+  }
 }
 
 export function mergeLoadedGemstoneLayout(
