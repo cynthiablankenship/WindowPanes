@@ -156,6 +156,7 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
 
   rootElement.querySelector<HTMLButtonElement>('[data-lock]')?.addEventListener('click', async (event) => {
     locked = !locked
+    document.body.classList.toggle('detached-locked', locked)
     rootElement.querySelector('.detached-pane')?.classList.toggle('locked', locked)
     ;(event.currentTarget as HTMLButtonElement).textContent = locked ? '🔒' : '🔓'
     ;(event.currentTarget as HTMLButtonElement).title = locked ? 'Unlock' : 'Lock'

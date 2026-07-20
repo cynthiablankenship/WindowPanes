@@ -58,7 +58,8 @@ body {
   -webkit-app-region: drag;
 }
 
-.detached-pane.locked .detached-titlebar {
+body.detached-locked,
+body.detached-locked * {
   -webkit-app-region: no-drag;
 }
 
