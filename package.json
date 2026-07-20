@@ -27,6 +27,7 @@
     "dist:linux": "npm run build && electron-builder --linux AppImage",
     "clean:dist": "node -e \"const fs=require('fs'); for (const p of ['dist','out']) fs.rmSync(p,{recursive:true,force:true});\"",
     "start": "electron-vite preview",
+    "postinstall": "node scripts/fix-node-pty-permissions.cjs",
     "rebuild": "electron-rebuild -f -w node-pty",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run"
