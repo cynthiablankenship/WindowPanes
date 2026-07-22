@@ -27,20 +27,20 @@ describe('detached pane window regions', () => {
 })
 
 describe('detached pane glass', () => {
-  it('uses the normal clipped material fill for detached panes', () => {
-    expect(source).toMatch(
-      /\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--material-fill\);/s
-    )
-    expect(source).not.toContain('--detached-material-fill')
-    expect(source).not.toContain('backdrop-filter: blur')
+  it('uses a clipped frosted material fill for detached panes', () => {
+    expect(source).toMatch(/\.detached-workspace \.gemstone-frame\s*{[^}]*--detached-material-fill:/s)
+    expect(source).toMatch(/\.detached-workspace \.gemstone-frame\s*{[^}]*background:\s*var\(--detached-material-fill\);/s)
+    expect(source).toMatch(/\.detached-workspace \.gemstone-frame\s*{[^}]*backdrop-filter:\s*blur\(24px\) saturate\(1\.28\);/s)
   })
 
   it('keeps the detached window root transparent around the clipped pane', () => {
     expect(source).toMatch(/html,\s*body,\s*#root\s*{[^}]*background:\s*transparent !important;/s)
   })
 
-  it('hides the offset pane shadow in detached windows so it does not outline the transparent shape', () => {
-    expect(source).toMatch(/\.detached-workspace \.gem-shadow\s*{[^}]*display:\s*none;/s)
+  it('keeps the detached shadow clipped and soft instead of painting a black window backdrop', () => {
+    expect(source).toMatch(/\.detached-workspace \.gem-shadow\s*{[^}]*opacity:\s*0\.52;/s)
+    expect(source).toMatch(/\.detached-workspace \.gem-shadow\s*{[^}]*filter:\s*blur\(22px\);/s)
+    expect(source).not.toMatch(/\.detached-workspace \.gem-shadow\s*{[^}]*display:\s*none;/s)
   })
 })
 
