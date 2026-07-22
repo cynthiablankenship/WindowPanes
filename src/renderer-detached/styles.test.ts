@@ -15,6 +15,15 @@ describe('detached pane window regions', () => {
     )
     expect(rendererSource).toContain("document.body.classList.toggle('detached-locked', locked)")
   })
+
+  it('provides large custom resize hit zones for the frameless detached window', () => {
+    expect(rendererSource).toContain('DETACHED_RESIZE_MODES')
+    expect(rendererSource).toContain('data-detached-resize')
+    expect(rendererSource).toContain('resizeDetachedWindow')
+    expect(source).toContain('.detached-window-resize-handle')
+    expect(source).toContain('width: 44px')
+    expect(source).toContain('height: 44px')
+  })
 })
 
 describe('detached pane glass', () => {

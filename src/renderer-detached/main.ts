@@ -30,6 +30,23 @@ const subtitle = params.get('subtitle') || 'Detached desktop pane'
 const material = getAllowedValue(params.get('material'), MATERIALS, 'diamond')
 const treatment = getAllowedValue(params.get('treatment'), TREATMENTS, 'sharp')
 const facetOrientation = getAllowedValue(params.get('facetOrientation'), FACET_ORIENTATIONS, 'right')
+const DETACHED_RESIZE_MODES = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as const
+const MIN_DETACHED_WINDOW_WIDTH = 420
+const MIN_DETACHED_WINDOW_HEIGHT = 260
+
+type DetachedResizeMode = (typeof DETACHED_RESIZE_MODES)[number]
+
+interface DetachedResizeInteraction {
+  mode: DetachedResizeMode
+  startScreenX: number
+  startScreenY: number
+  startBounds: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
 
 if (!root || !paneId || !ptyId) {
   document.body.textContent = 'Detached pane is missing a terminal session.'
@@ -64,6 +81,7 @@ interface DetachedPaneModel {
 function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): void {
   let currentPane: DetachedPaneModel = { ...pane, profiles: [...pane.profiles] }
   let lastKnownPtyId = pane.ptyId
+  let resizeInteraction: DetachedResizeInteraction | null = null
   rootElement.innerHTML = `
     <main class="gemstone-workspace detached-workspace">
       <article class="gem-pane detached-pane active material-${currentPane.material} treatment-${currentPane.treatment} orientation-${currentPane.facetOrientation} status-${currentPane.status}" data-pane-visible="true" data-pane-selected="true" data-pane-locked="false" data-pane-status="${currentPane.status}" style="--pane-x: 0px; --pane-y: 0px;">
@@ -116,6 +134,12 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
           </div>
         </div>
       </article>
+      <div class="detached-window-resize-handles" aria-label="Detached window resize handles">
+        ${DETACHED_RESIZE_MODES.map(
+          (mode) =>
+            `<button type="button" class="detached-window-resize-handle detached-window-resize-${mode}" data-detached-resize="${mode}" aria-label="Resize detached pane ${mode}"></button>`
+        ).join('')}
+      </div>
     </main>
   `
 
@@ -246,6 +270,39 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
     ;(event.currentTarget as HTMLButtonElement).textContent = alwaysOnTop ? '⌖' : '◇'
     ;(event.currentTarget as HTMLButtonElement).title = alwaysOnTop ? 'Unpin' : 'Pin'
     await window.terminalApi.updateDetachedWindow({ alwaysOnTop })
+  })
+
+  rootElement.querySelectorAll<HTMLButtonElement>('[data-detached-resize]').forEach((handle) => {
+    handle.addEventListener('pointerdown', (event) => {
+      if (locked) {
+        return
+      }
+
+      const mode = handle.dataset.detachedResize
+
+      if (!isDetachedResizeMode(mode)) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      handle.setPointerCapture(event.pointerId)
+      resizeInteraction = {
+        mode,
+        startScreenX: event.screenX,
+        startScreenY: event.screenY,
+        startBounds: {
+          x: window.screenX,
+          y: window.screenY,
+          width: window.outerWidth,
+          height: window.outerHeight
+        }
+      }
+      document.body.classList.add('detached-resizing')
+      window.addEventListener('pointermove', handleDetachedResizeMove)
+      window.addEventListener('pointerup', endDetachedResize)
+      window.addEventListener('pointercancel', endDetachedResize)
+    })
   })
 
   rootElement.querySelector<HTMLButtonElement>('[data-edit]')?.addEventListener('click', () => {
@@ -393,6 +450,58 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
     populateSelect(treatmentSelect, TREATMENTS, currentPane.treatment, formatTreatment)
     populateSelect(facetOrientationSelect, FACET_ORIENTATIONS, currentPane.facetOrientation, formatFacetOrientation)
   }
+
+  function handleDetachedResizeMove(event: PointerEvent): void {
+    if (!resizeInteraction) {
+      return
+    }
+
+    event.preventDefault()
+    const bounds = getDetachedResizeBounds(resizeInteraction, event.screenX, event.screenY)
+    void window.terminalApi.resizeDetachedWindow(bounds)
+  }
+
+  function endDetachedResize(): void {
+    resizeInteraction = null
+    document.body.classList.remove('detached-resizing')
+    window.removeEventListener('pointermove', handleDetachedResizeMove)
+    window.removeEventListener('pointerup', endDetachedResize)
+    window.removeEventListener('pointercancel', endDetachedResize)
+  }
+}
+
+function getDetachedResizeBounds(
+  interaction: DetachedResizeInteraction,
+  screenX: number,
+  screenY: number
+): DetachedResizeInteraction['startBounds'] {
+  const deltaX = screenX - interaction.startScreenX
+  const deltaY = screenY - interaction.startScreenY
+  const nextBounds = { ...interaction.startBounds }
+
+  if (interaction.mode.includes('e')) {
+    nextBounds.width = Math.max(MIN_DETACHED_WINDOW_WIDTH, interaction.startBounds.width + deltaX)
+  }
+
+  if (interaction.mode.includes('s')) {
+    nextBounds.height = Math.max(MIN_DETACHED_WINDOW_HEIGHT, interaction.startBounds.height + deltaY)
+  }
+
+  if (interaction.mode.includes('w')) {
+    nextBounds.width = Math.max(MIN_DETACHED_WINDOW_WIDTH, interaction.startBounds.width - deltaX)
+    nextBounds.x = interaction.startBounds.x + (interaction.startBounds.width - nextBounds.width)
+  }
+
+  if (interaction.mode.includes('n')) {
+    nextBounds.height = Math.max(MIN_DETACHED_WINDOW_HEIGHT, interaction.startBounds.height - deltaY)
+    nextBounds.y = interaction.startBounds.y + (interaction.startBounds.height - nextBounds.height)
+  }
+
+  return nextBounds
+}
+
+function isDetachedResizeMode(value: string | undefined): value is DetachedResizeMode {
+  return DETACHED_RESIZE_MODES.includes(value as DetachedResizeMode)
 }
 
 function populateSelect<T extends string>(

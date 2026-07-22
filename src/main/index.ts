@@ -13,6 +13,7 @@ import {
   type CommandAvailabilityRequest,
   type DetachedWindowCloseRequest,
   type DetachedWindowReadyRequest,
+  type DetachedWindowResizeRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
   type KillRequest,
@@ -384,6 +385,10 @@ function normalizeDetachedWindowSize(value: number | undefined, fallback: number
   return typeof value === 'number' && Number.isFinite(value) ? Math.max(360, Math.round(value)) : fallback;
 }
 
+function normalizeDetachedWindowPosition(value: number, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : fallback;
+}
+
 function closeDetachedWindow(sender: Electron.WebContents, request: DetachedWindowCloseRequest): void {
   const detachedWindow = (request.ptyId ? detachedWindows.get(request.ptyId) : undefined) ?? BrowserWindow.fromWebContents(sender);
 
@@ -431,6 +436,26 @@ function waitForDetachedWindowReady(detachedWindow: BrowserWindow, request: Deta
 
     detachedReadyWaiters.add(handleReady);
     detachedWindow.once('closed', handleClosed);
+  });
+}
+
+function resizeDetachedWindow(sender: Electron.WebContents, request: DetachedWindowResizeRequest): void {
+  const detachedWindow = BrowserWindow.fromWebContents(sender);
+
+  if (!detachedWindow || detachedWindow.isDestroyed() || !detachedWindow.isResizable()) {
+    return;
+  }
+
+  const [minWidth, minHeight] = detachedWindow.getMinimumSize();
+  const currentBounds = detachedWindow.getBounds();
+  const width = Math.max(minWidth, normalizeDetachedWindowSize(request.width, currentBounds.width));
+  const height = Math.max(minHeight, normalizeDetachedWindowSize(request.height, currentBounds.height));
+
+  detachedWindow.setBounds({
+    x: normalizeDetachedWindowPosition(request.x, currentBounds.x),
+    y: normalizeDetachedWindowPosition(request.y, currentBounds.y),
+    width,
+    height
   });
 }
 
@@ -733,6 +758,10 @@ function registerIpc(): void {
 
   ipcMain.handle(IpcChannel.DetachedWindowUpdate, (event, request: DetachedWindowUpdateRequest) => {
     updateDetachedWindow(event.sender, request);
+  });
+
+  ipcMain.handle(IpcChannel.DetachedWindowResize, (event, request: DetachedWindowResizeRequest) => {
+    resizeDetachedWindow(event.sender, request);
   });
 
   ipcMain.handle(IpcChannel.DetachedWindowClose, (event, request: DetachedWindowCloseRequest) => {

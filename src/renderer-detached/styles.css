@@ -144,10 +144,208 @@ body.detached-locked * {
   -webkit-app-region: no-drag;
 }
 
+body.detached-resizing,
+body.detached-resizing * {
+  user-select: none;
+}
+
 .detached-workspace .pane-command-subtitle,
 .detached-workspace .pane-chip-row,
 .detached-workspace .pane-icon-controls {
   opacity: 1;
+}
+
+.detached-window-resize-handles {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.detached-window-resize-handle {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: auto;
+  transition:
+    opacity 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.detached-window-resize-handle::after {
+  position: absolute;
+  content: "";
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.detached-window-resize-handle:hover,
+.detached-window-resize-handle:focus-visible,
+body.detached-resizing .detached-window-resize-handle {
+  opacity: 1;
+}
+
+.detached-window-resize-handle:hover::after,
+.detached-window-resize-handle:focus-visible::after,
+body.detached-resizing .detached-window-resize-handle::after {
+  opacity: 1;
+}
+
+.detached-window-resize-n,
+.detached-window-resize-s {
+  left: 72px;
+  right: 72px;
+  height: 18px;
+}
+
+.detached-window-resize-n {
+  top: 0;
+  cursor: ns-resize;
+}
+
+.detached-window-resize-s {
+  bottom: 0;
+  cursor: ns-resize;
+}
+
+.detached-window-resize-n::after,
+.detached-window-resize-s::after {
+  left: 50%;
+  width: min(180px, 40vw);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(213, 244, 255, 0.72);
+  box-shadow: 0 0 16px rgba(127, 224, 255, 0.42);
+  transform: translateX(-50%);
+}
+
+.detached-window-resize-n::after {
+  top: 5px;
+}
+
+.detached-window-resize-s::after {
+  bottom: 5px;
+}
+
+.detached-window-resize-e,
+.detached-window-resize-w {
+  top: 72px;
+  bottom: 72px;
+  width: 18px;
+}
+
+.detached-window-resize-e {
+  right: 0;
+  cursor: ew-resize;
+}
+
+.detached-window-resize-w {
+  left: 0;
+  cursor: ew-resize;
+}
+
+.detached-window-resize-e::after,
+.detached-window-resize-w::after {
+  top: 50%;
+  width: 3px;
+  height: min(160px, 36vh);
+  border-radius: 999px;
+  background: rgba(213, 244, 255, 0.72);
+  box-shadow: 0 0 16px rgba(127, 224, 255, 0.42);
+  transform: translateY(-50%);
+}
+
+.detached-window-resize-e::after {
+  right: 5px;
+}
+
+.detached-window-resize-w::after {
+  left: 5px;
+}
+
+.detached-window-resize-ne,
+.detached-window-resize-nw,
+.detached-window-resize-se,
+.detached-window-resize-sw {
+  width: 44px;
+  height: 44px;
+}
+
+.detached-window-resize-ne,
+.detached-window-resize-sw {
+  cursor: nesw-resize;
+}
+
+.detached-window-resize-nw,
+.detached-window-resize-se {
+  cursor: nwse-resize;
+}
+
+.detached-window-resize-ne,
+.detached-window-resize-nw {
+  top: 0;
+}
+
+.detached-window-resize-se,
+.detached-window-resize-sw {
+  bottom: 0;
+}
+
+.detached-window-resize-ne,
+.detached-window-resize-se {
+  right: 0;
+}
+
+.detached-window-resize-nw,
+.detached-window-resize-sw {
+  left: 0;
+}
+
+.detached-window-resize-ne::after,
+.detached-window-resize-nw::after,
+.detached-window-resize-se::after,
+.detached-window-resize-sw::after {
+  width: 16px;
+  height: 16px;
+  border-color: rgba(224, 248, 255, 0.82);
+  box-shadow: 0 0 16px rgba(127, 224, 255, 0.4);
+}
+
+.detached-window-resize-ne::after {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.detached-window-resize-nw::after {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.detached-window-resize-se::after {
+  right: 8px;
+  bottom: 8px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.detached-window-resize-sw::after {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+body.detached-locked .detached-window-resize-handle {
+  display: none;
 }
 
 .detached-workspace .pane-icon-controls {
@@ -228,6 +426,7 @@ body.detached-locked * {
 .detached-workspace .terminal-surface,
 .detached-workspace .xterm,
 .detached-workspace .detached-editor,
+.detached-window-resize-handle,
 .detached-workspace button {
   -webkit-app-region: no-drag;
 }

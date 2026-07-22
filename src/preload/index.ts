@@ -4,6 +4,7 @@ import {
   type DetachedWindowCloseRequest,
   type DetachedWindowClosedEvent,
   type DetachedWindowReadyRequest,
+  type DetachedWindowResizeRequest,
   type CommandAvailabilityRequest,
   type DetachedWindowUpdateRequest,
   type DetachPaneRequest,
@@ -42,6 +43,8 @@ const terminalApi: TerminalApi = {
     ipcRenderer.invoke(IpcChannel.DetachedWindowReady, request),
   updateDetachedWindow: (request: DetachedWindowUpdateRequest) =>
     ipcRenderer.invoke(IpcChannel.DetachedWindowUpdate, request),
+  resizeDetachedWindow: (request: DetachedWindowResizeRequest) =>
+    ipcRenderer.invoke(IpcChannel.DetachedWindowResize, request),
   closeDetachedWindow: (request: DetachedWindowCloseRequest) =>
     ipcRenderer.invoke(IpcChannel.DetachedWindowClose, request),
   onData: (callback: (event: TerminalDataEvent) => void) => {

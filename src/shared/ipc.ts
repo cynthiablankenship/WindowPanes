@@ -31,6 +31,7 @@ export const IpcChannel = {
   TerminalDetachPane: 'terminal:detach-pane',
   DetachedWindowReady: 'detached-window:ready',
   DetachedWindowUpdate: 'detached-window:update',
+  DetachedWindowResize: 'detached-window:resize',
   DetachedWindowClose: 'detached-window:close',
   StorageLoad: 'storage:load',
   StorageSave: 'storage:save',
@@ -115,6 +116,13 @@ export interface DetachedWindowReadyRequest {
   paneId: string
 }
 
+export interface DetachedWindowResizeRequest {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface DetachedWindowCloseRequest {
   ptyId?: string | null
   paneId?: string
@@ -162,6 +170,7 @@ export interface TerminalApi {
   detachPane(req: DetachPaneRequest): Promise<void>
   notifyDetachedWindowReady(req: DetachedWindowReadyRequest): Promise<void>
   updateDetachedWindow(req: DetachedWindowUpdateRequest): Promise<void>
+  resizeDetachedWindow(req: DetachedWindowResizeRequest): Promise<void>
   closeDetachedWindow(req: DetachedWindowCloseRequest): Promise<void>
   onData(listener: (event: TerminalDataEvent) => void): Unsubscribe
   onExit(listener: (event: TerminalExitEvent) => void): Unsubscribe
