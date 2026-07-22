@@ -136,12 +136,13 @@ function renderDetachedPane(rootElement: HTMLElement, pane: DetachedPaneModel): 
   }
 
   const terminal = new Terminal({
+    allowTransparency: true,
     convertEol: true,
     cursorBlink: true,
     fontFamily: 'Cascadia Mono, Menlo, Monaco, monospace',
     fontSize: 14,
     theme: {
-      background: '#050b10',
+      background: 'rgba(5, 11, 16, 0.82)',
       foreground: '#d8e4ea',
       cursor: '#8be9fd',
       selectionBackground: '#26485a'
